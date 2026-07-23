@@ -1,0 +1,1 @@
+"""FinApp personal-finance application."""
