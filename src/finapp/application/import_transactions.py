@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
 from io import BytesIO
+from typing import Any
 
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
@@ -41,22 +43,22 @@ def import_csv(content: bytes, repository: TransactionRepository) -> ImportResul
 
     transactions: list[Transaction] = []
     errors: list[RowImportError] = []
-    for position, row in frame.iterrows():
+    for row_number, (_, row) in enumerate(frame.iterrows(), start=2):
         try:
             transactions.append(_to_transaction(row))
         except (ValidationError, TypeError, ValueError) as error:
-            errors.append(RowImportError(row_number=position + 2, message=str(error)))
+            errors.append(RowImportError(row_number=row_number, message=str(error)))
 
     repository.add_many(transactions)
     return ImportResult(imported_count=len(transactions), errors=tuple(errors))
 
 
-def _to_transaction(row: pd.Series[object]) -> Transaction:
+def _to_transaction(row: pd.Series[Any]) -> Transaction:
     category = row.get("category", "Uncategorised")
-    resolved_category = "Uncategorised" if pd.isna(category) else str(category)
+    resolved_category = "Uncategorised" if category is None else str(category)
     return Transaction(
-        occurred_on=pd.to_datetime(row["date"], errors="raise").date(),
+        occurred_on=pd.to_datetime(str(row["date"]), errors="raise").date(),
         description=str(row["description"]),
-        amount=str(row["amount"]),
+        amount=Decimal(str(row["amount"])),
         category=resolved_category,
     )

@@ -1,6 +1,7 @@
 """Financial summary use case."""
 
 from decimal import Decimal
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -48,7 +49,9 @@ def build_summary(transactions: list[Transaction]) -> FinancialSummary:
         Decimal("0.01")
     )
     expense_frame = frame.loc[frame["amount"] < 0].copy()
-    grouped = expense_frame.groupby("category", as_index=False)["amount"].sum()
+    grouped = expense_frame.groupby("category", as_index=False).agg(
+        amount=("amount", "sum")
+    )
     grouped["amount"] = grouped["amount"].abs()
     total_expenses = float(grouped["amount"].sum())
     grouped["share_percent"] = np.where(
@@ -60,11 +63,11 @@ def build_summary(transactions: list[Transaction]) -> FinancialSummary:
         CategoryTotal(
             category=str(row.category),
             amount=Decimal(str(row.amount)).quantize(Decimal("0.01")),
-            share_percent=round(float(row.share_percent), 2),
+            share_percent=round(float(cast(float, row.share_percent)), 2),
         )
-        for row in grouped.sort_values(
-            "amount", ascending=False
-        ).itertuples(index=False)
+        for row in grouped.sort_values("amount", ascending=False).itertuples(
+            index=False
+        )
     )
     return FinancialSummary(
         income=income,

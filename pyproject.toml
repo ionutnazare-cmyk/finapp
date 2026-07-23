@@ -3,7 +3,7 @@ name = "finapp"
 version = "0.1.0"
 description = "Personal-finance dashboard"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "numpy>=2.0",
     "pandas>=2.2",
@@ -11,20 +11,24 @@ dependencies = [
     "streamlit>=1.37",
 ]
 
+[project.scripts]
+finapp = "finapp.presentation.cli:main"
+
 [dependency-groups]
 dev = [
     "black>=24.10",
     "mypy>=1.11",
+    "pandas-stubs>=2.2",
     "pytest>=8.3",
     "ruff>=0.6",
 ]
 
 [build-system]
-requires = ["hatchling>=1.25"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/finapp"]
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

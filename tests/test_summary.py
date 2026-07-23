@@ -9,18 +9,20 @@ def test_summary_calculates_income_expenses_balance_and_categories() -> None:
     summary = build_summary(
         [
             Transaction(
-                occurred_on=date(2026, 1, 1), description="Salary", amount=3000
+                occurred_on=date(2026, 1, 1),
+                description="Salary",
+                amount=Decimal("3000"),
             ),
             Transaction(
                 occurred_on=date(2026, 1, 2),
                 description="Groceries",
-                amount=-120,
+                amount=Decimal("-120"),
                 category="Food",
             ),
             Transaction(
                 occurred_on=date(2026, 1, 3),
                 description="Rent",
-                amount=-900,
+                amount=Decimal("-900"),
                 category="Housing",
             ),
         ]
