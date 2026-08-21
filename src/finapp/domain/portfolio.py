@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import date
 from decimal import ROUND_DOWN, Decimal
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -79,10 +80,42 @@ class Position(BaseModel):
     yield_on_cost: Decimal = Decimal("0.00")
 
 
+class DividendPayment(BaseModel):
+    """A cash dividend paid per share on a specified date."""
+
+    model_config = ConfigDict(frozen=True, str_strip_whitespace=True)
+
+    action_type: Literal["DIVIDEND"] = "DIVIDEND"
+    occurred_on: date
+    ticker: str = Field(min_length=1, max_length=20)
+    dividend_per_share: Decimal = Field(gt=0, decimal_places=4)
+    withholding_tax_rate: Decimal = Field(default=Decimal("0"), ge=0, le=1)
+
+    @field_validator("ticker")
+    @classmethod
+    def normalize_ticker(cls, value: str) -> str:
+        return value.upper()
+
+
+class TLVBonusShareGrant(BaseModel):
+    """TLV corporate action granting additional shares without cash cost."""
+
+    model_config = ConfigDict(frozen=True)
+
+    action_type: Literal["TLV_BONUS_SHARES"] = "TLV_BONUS_SHARES"
+    occurred_on: date
+    bonus_shares_per_share: Decimal = Field(gt=0, decimal_places=8)
+
+
+type CorporateAction = DividendPayment | TLVBonusShareGrant
+
+
 class LedgerTransactionType(StrEnum):
     """Supported investment ledger events."""
 
     BUY = "BUY"
+    DIVIDEND = "DIVIDEND"
+    BONUS_SHARES = "BONUS_SHARES"
 
 
 class LedgerTransaction(BaseModel):
@@ -93,10 +126,17 @@ class LedgerTransaction(BaseModel):
     transaction_type: LedgerTransactionType = LedgerTransactionType.BUY
     occurred_on: date
     ticker: str
-    shares: Decimal = Field(gt=0)
-    price: Decimal = Field(gt=0)
-    fees: Decimal = Field(ge=0)
-    cash_used: Decimal = Field(gt=0)
+    shares: Decimal = Field(default=Decimal("0"), ge=0)
+    price: Decimal = Field(default=Decimal("0.00"), ge=0)
+    fees: Decimal = Field(default=Decimal("0.00"), ge=0)
+    cash_used: Decimal = Field(default=Decimal("0.00"), ge=0)
+    cash_received: Decimal = Field(default=Decimal("0.00"), ge=0)
+
+    @model_validator(mode="after")
+    def validate_amounts(self) -> LedgerTransaction:
+        if self.transaction_type is LedgerTransactionType.BUY and self.shares <= 0:
+            raise ValueError("a BUY transaction requires positive shares")
+        return self
 
 
 class MonthlyHistory(BaseModel):

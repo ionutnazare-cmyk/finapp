@@ -1,7 +1,58 @@
-.venv/
-.mypy_cache/
-.pytest_cache/
-.ruff_cache/
+# Python
 __pycache__/
 *.py[cod]
-.streamlit/
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# uv
+.uv/
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project data / outputs (generated reports, downloaded market data)
+data/raw/
+data/processed/
+reports/output/
+*.xlsx
+*.pdf
+!docs/**/*.pdf
+
+# Logs
+*.log

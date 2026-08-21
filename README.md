@@ -1,60 +1,67 @@
 # FinApp
 
-FinApp is a local personal-finance application. Sprint 1 provides CSV transaction
-import and a Streamlit dashboard. Sprint 2 adds a deterministic, Decimal-based
-portfolio simulation engine.
+Professional dividend investing and retirement optimizer, focused initially on the
+**Bucharest Stock Exchange (BVB)**.
+
+> Status: **Sprint 1.1 — Project Bootstrap**. Domain logic has not been implemented
+> yet; this sprint establishes the repository skeleton, tooling, and CI so future
+> sprints can build features on a stable foundation.
+
+## Vision
+
+FinApp will eventually support:
+
+- Portfolio management
+- Monthly DCA (dollar-cost averaging) investing
+- Dividend reinvestment
+- TLV bonus share tracking
+- Monte Carlo simulations
+- Portfolio optimization
+- Retirement planning
+- Fair value estimation
+- Dividend safety scoring
+- A Streamlit dashboard
+- Excel/PDF reporting
+- Automatic BVB data updates
 
 ## Architecture
 
-The project uses Clean Architecture under `src/finapp`:
+FinApp follows **Clean Architecture** with **Domain-Driven Design** where it adds
+clarity, and is built with strong typing (Pydantic v2 + dataclasses) throughout.
 
-- `domain` contains framework-independent portfolio and transaction models.
-- `application` contains use cases and provider/repository ports.
-- `infrastructure` contains adapters, including the JSON static-price provider.
-- `presentation` contains the Streamlit application and CLI.
+```
+src/finapp/
+├── domain/            # Entities, value objects, domain services. No framework deps.
+├── application/       # Use cases, ports (interfaces), application services.
+├── infrastructure/    # Adapters: data providers, repositories, file I/O, external APIs.
+├── presentation/       # CLI and Streamlit dashboard entry points.
+└── config.py          # Application-wide, environment-driven settings.
+```
 
-## Setup and dashboard
+Dependency direction always points inward: `presentation` and `infrastructure`
+depend on `application`, which depends on `domain`. `domain` depends on nothing
+in this project.
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for details and the roadmap of
+future sprints.
+
+## Requirements
+
+- Python 3.12+
+- [`uv`](https://docs.astral.sh/uv/) for dependency and environment management
+
+## Getting started
 
 ```bash
-uv sync --all-groups
+# Install dependencies (creates .venv automatically)
+uv sync --extra dev
+
+# Run the CLI placeholder
+uv run finapp
+
+# Run the Streamlit dashboard placeholder
 uv run streamlit run src/finapp/presentation/streamlit_app.py
 ```
-
-The dashboard accepts a transaction CSV with `date`, `description`, and `amount`.
-`category` is optional. Positive amounts are income and negative amounts expenses.
-
-## Simulation engine
-
-The simulator creates one investment event for each month in the inclusive range,
-allocates every contribution, records BUY ledger transactions, and retains unspent
-cash (for example, where whole shares are required). Money is calculated with
-`Decimal`; binary floating-point values are not used for financial calculations.
-
-Prices are supplied outside the engine through a market-data provider. The included
-adapter reads JSON in this format:
-
-```json
-{
-  "TLV": {"2026-01-01": "40", "2026-02-01": "40"},
-  "SNP": {"2026-01-01": "0.85", "2026-02-01": "0.85"},
-  "H2O": {"2026-01-01": "120", "2026-02-01": "120"}
-}
-```
-
-Run a simulation (the default price file is `prices.json`):
-
-```bash
-uv run finapp simulate \
-  --from 2026-01 \
-  --to 2027-12 \
-  --monthly 4000 \
-  --allocation TLV=40,SNP=35,H2O=25 \
-  --prices prices.json
-```
-
-Use `--whole-shares` to disable fractional shares and `--broker-fee 2.50` to apply
-a fixed fee to each executed BUY. The CLI prints the portfolio summary, allocation,
-cash, and transactions.
 
 ## Quality checks
 
@@ -64,3 +71,28 @@ uv run black --check .
 uv run mypy src tests
 uv run pytest
 ```
+
+All four checks are enforced in CI on every push and pull request (see
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
+
+## Project layout
+
+```
+finapp/
+├── src/finapp/                 # Application source (see Architecture above)
+├── tests/                      # PyTest test suite, mirrors src/finapp layout
+├── docs/                       # Architecture notes and sprint roadmap
+├── .github/workflows/ci.yml    # Lint, type-check, test pipeline
+├── pyproject.toml              # Packaging, dependencies, tool configuration
+├── Makefile                    # Convenience commands
+└── README.md
+```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development workflow, coding standards,
+and commit conventions.
+
+## License
+
+[MIT](LICENSE)

@@ -1,0 +1,8 @@
+# FinApp configuration
+# This file can be extended with API keys, data source URLs, and other runtime settings.
+# Example:
+# bvb_api:
+#   base_url: "https://api.bvb.ro"
+#   api_key: "YOUR_API_KEY"
+
+# For now, leave empty.

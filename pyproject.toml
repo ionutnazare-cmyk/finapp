@@ -1,59 +1,130 @@
 [project]
 name = "finapp"
 version = "0.1.0"
-description = "Personal-finance dashboard"
+description = "Professional dividend investing and retirement optimizer, focused initially on the Bucharest Stock Exchange (BVB)."
 readme = "README.md"
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "FinApp Contributors" }]
+keywords = [
+    "finance",
+    "dividends",
+    "retirement",
+    "bvb",
+    "portfolio",
+    "monte-carlo",
+    "streamlit",
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
+
 dependencies = [
-    "numpy>=2.0",
+    "numpy>=1.26",
     "pandas>=2.2",
+    "scipy>=1.13",
+    "plotly>=5.22",
+    "streamlit>=1.38",
     "pydantic>=2.8",
-    "streamlit>=1.37",
+    "pydantic-settings>=2.4",
+    "openpyxl>=3.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=5.0",
+    "black>=24.8",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "pandas-stubs>=2.2",
 ]
 
 [project.scripts]
 finapp = "finapp.presentation.cli:main"
 
-[dependency-groups]
-dev = [
-    "black>=24.10",
-    "mypy>=1.11",
-    "pandas-stubs>=2.2",
-    "pytest>=8.3",
-    "ruff>=0.6",
-]
+[project.urls]
+Homepage = "https://github.com/ionutnazare-cmyk/finapp"
+Repository = "https://github.com/ionutnazare-cmyk/finapp"
+Issues = "https://github.com/ionutnazare-cmyk/finapp/issues"
 
 [build-system]
-requires = ["setuptools>=75"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/finapp"]
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-q"
+[tool.uv]
+package = true
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+include = '\.pyi?$'
 
 [tool.ruff]
+line-length = 100
 target-version = "py312"
-line-length = 88
 src = ["src", "tests"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM"]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+    "TID", # flake8-tidy-imports
+    "RUF", # ruff-specific rules
+]
+ignore = ["E501"]
 
-[tool.black]
-line-length = 88
-target-version = ["py312"]
+[tool.ruff.lint.isort]
+known-first-party = ["finapp"]
 
 [tool.mypy]
 python_version = "3.12"
 strict = true
-mypy_path = "src"
-explicit_package_bases = true
+warn_unused_ignores = true
+warn_return_any = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+no_implicit_optional = true
 plugins = ["pydantic.mypy"]
+mypy_path = "src"
+exclude = ["^tests/"]
+
+[[tool.mypy.overrides]]
+module = ["plotly.*", "streamlit.*", "scipy.*", "openpyxl.*"]
+ignore_missing_imports = true
 
 [tool.pydantic-mypy]
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q --cov=finapp --cov-report=term-missing --cov-report=xml"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.coverage.run]
+source = ["src/finapp"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]

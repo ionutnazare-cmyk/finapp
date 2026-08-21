@@ -5,7 +5,13 @@ import pytest
 from pydantic import ValidationError
 
 from finapp.application.simulate_portfolio import SimulationRequest, simulate_portfolio
-from finapp.domain.portfolio import Allocation, AllocationTarget
+from finapp.domain.portfolio import (
+    Allocation,
+    AllocationTarget,
+    DividendPayment,
+    LedgerTransactionType,
+    TLVBonusShareGrant,
+)
 from finapp.infrastructure.static_prices import StaticPriceProvider
 
 
@@ -124,3 +130,76 @@ def test_twenty_four_month_simulation_has_correct_positions_and_ledger() -> None
     assert result.portfolio.invested == Decimal("96000.00")
     assert result.portfolio.cash == Decimal("0.00")
     assert result.portfolio.profit == Decimal("0.00")
+
+
+def test_dividend_is_recorded_and_reinvested_in_the_same_ticker() -> None:
+    provider = StaticPriceProvider(
+        {
+            "SNP": {
+                "2026-01-01": Decimal("10"),
+                "2026-01-15": Decimal("10"),
+                "2026-01-31": Decimal("10"),
+            }
+        }
+    )
+    result = simulate_portfolio(
+        SimulationRequest(
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 1, 31),
+            monthly_contribution=Decimal("100"),
+            allocation=allocation(("SNP", "100")),
+            corporate_actions=(
+                DividendPayment(
+                    occurred_on=date(2026, 1, 15),
+                    ticker="SNP",
+                    dividend_per_share=Decimal("1"),
+                ),
+            ),
+        ),
+        provider,
+    )
+
+    position = result.portfolio.positions[0]
+    assert position.shares == Decimal("11.00000000")
+    assert position.dividend_received == Decimal("10.00")
+    assert result.portfolio.cash == Decimal("0.00")
+    assert [item.transaction_type for item in result.transactions] == [
+        LedgerTransactionType.BUY,
+        LedgerTransactionType.DIVIDEND,
+        LedgerTransactionType.BUY,
+    ]
+
+
+def test_tlv_bonus_shares_increase_shares_without_increasing_investment() -> None:
+    provider = StaticPriceProvider(
+        {
+            "TLV": {
+                "2026-01-01": Decimal("10"),
+                "2026-01-15": Decimal("10"),
+                "2026-01-31": Decimal("10"),
+            }
+        }
+    )
+    result = simulate_portfolio(
+        SimulationRequest(
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 1, 31),
+            monthly_contribution=Decimal("100"),
+            allocation=allocation(("TLV", "100")),
+            corporate_actions=(
+                TLVBonusShareGrant(
+                    occurred_on=date(2026, 1, 15),
+                    bonus_shares_per_share=Decimal("0.1"),
+                ),
+            ),
+        ),
+        provider,
+    )
+
+    position = result.portfolio.positions[0]
+    assert position.shares == Decimal("11.00000000")
+    assert position.invested_amount == Decimal("100.00")
+    assert position.average_cost == Decimal("9.09")
+    assert (
+        result.transactions[-1].transaction_type is LedgerTransactionType.BONUS_SHARES
+    )
