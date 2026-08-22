@@ -7,8 +7,15 @@ Rules for this package (see ``docs/ARCHITECTURE.md``):
   ``ReportExporter``) that the infrastructure layer implements.
 - Contains orchestration logic (use cases) but no concrete I/O.
 
-Sprint 1.1 leaves this package empty; use cases and ports are introduced
-starting with Sprint 1.3.
+Sprint 1.1 established this package as empty scaffolding. Sprint 1.3 added
+the first port and its supporting DTO:
+
+- ``finapp.application.ports``: ``MarketDataProvider`` (abstract interface).
+- ``finapp.application.dto``: ``Quote`` (data returned by ports).
+- ``finapp.application.exceptions``: application-level error types.
+
+Use cases (orchestration logic that calls ports and domain entities
+together) are introduced starting with Sprint 1.4.
 """
 
 from __future__ import annotations
