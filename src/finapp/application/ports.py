@@ -9,9 +9,10 @@ change — or be swapped for a test double — without touching calling code.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 
 from finapp.application.dto import Quote
+from finapp.domain.entities.portfolio import Portfolio
 
 
 class MarketDataProvider(ABC):
@@ -43,3 +44,30 @@ class MarketDataProvider(ABC):
         """
 
         return {symbol: self.get_quote(symbol) for symbol in symbols}
+
+
+class PortfolioRepository(ABC):
+    """Port for loading and persisting :class:`Portfolio` aggregates.
+
+    Infrastructure adapters (in-memory, a local JSON file cache, eventually
+    a database) implement this interface. Use cases depend only on this
+    abstraction, never on how or where portfolios are actually stored.
+    """
+
+    @abstractmethod
+    def get(self, name: str) -> Portfolio | None:
+        """Return the portfolio named ``name``, or ``None`` if it doesn't exist."""
+
+        raise NotImplementedError
+
+    @abstractmethod
+    def save(self, portfolio: Portfolio) -> None:
+        """Persist ``portfolio``, creating or overwriting it by name."""
+
+        raise NotImplementedError
+
+    @abstractmethod
+    def list_names(self) -> Sequence[str]:
+        """Return the names of all portfolios currently persisted."""
+
+        raise NotImplementedError

@@ -14,8 +14,12 @@ the first port and its supporting DTO:
 - ``finapp.application.dto``: ``Quote`` (data returned by ports).
 - ``finapp.application.exceptions``: application-level error types.
 
-Use cases (orchestration logic that calls ports and domain entities
-together) are introduced starting with Sprint 1.4.
+Sprint 1.4 added the ``PortfolioRepository`` port and the first use cases:
+
+- ``finapp.application.ports.PortfolioRepository``: load/save portfolios.
+- ``finapp.application.use_cases``: ``CreatePortfolio``, ``BuyShares``,
+  ``SellShares``, ``GetPortfolioValuation``.
+- ``finapp.application.dto``: ``PositionValuation``, ``PortfolioValuation``.
 """
 
 from __future__ import annotations

@@ -1,8 +1,10 @@
-"""Data-transfer objects exchanged across the application layer's ports."""
+"""Data-transfer objects exchanged across the application layer's ports and use cases."""
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import date
+from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
@@ -35,3 +37,32 @@ class Quote(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.symbol}={self.price} @ {self.as_of.isoformat()}"
+
+
+@dataclass(frozen=True)
+class PositionValuation:
+    """A single position's valuation as of a given quote.
+
+    A plain (non-pydantic) frozen dataclass, since this is an internal
+    computation result assembled by a use case rather than data crossing
+    a validated boundary (e.g. an external API or a repository).
+    """
+
+    symbol: str
+    quantity: Decimal
+    average_cost: Money
+    market_price: Money
+    book_cost: Money
+    market_value: Money
+    unrealized_pnl: Money
+
+
+@dataclass(frozen=True)
+class PortfolioValuation:
+    """The full valuation of a portfolio: totals plus a per-position breakdown."""
+
+    portfolio_name: str
+    base_currency_total_book_cost: Money
+    base_currency_total_market_value: Money
+    base_currency_total_unrealized_pnl: Money
+    positions: tuple[PositionValuation, ...]

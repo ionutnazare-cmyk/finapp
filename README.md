@@ -57,11 +57,17 @@ future sprints.
 uv sync --extra dev
 
 # Run the CLI placeholder
-uv run finapp
+PYTHONPATH=src uv run finapp
 
 # Run the Streamlit dashboard placeholder
-uv run streamlit run src/finapp/presentation/streamlit_app.py
+PYTHONPATH=src uv run streamlit run src/finapp/presentation/streamlit_app.py
 ```
+
+> **Note:** `PYTHONPATH=src` works around an editable-install quirk on some
+> `uv` setups where the local `finapp` package's `.pth` redirect isn't picked
+> up by `uv run` even though `uv pip show finapp` reports it installed. If
+> `uv run finapp` works for you without it, feel free to drop it. `make run`
+> and `make dashboard` already include it.
 
 ## Quality checks
 

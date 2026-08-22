@@ -19,3 +19,19 @@ class QuoteNotFoundError(ApplicationError):
     def __init__(self, symbol: str) -> None:
         super().__init__(f"No quote available for symbol '{symbol}'")
         self.symbol = symbol
+
+
+class PortfolioNotFoundError(ApplicationError):
+    """Raised when a use case references a portfolio that doesn't exist."""
+
+    def __init__(self, name: str) -> None:
+        super().__init__(f"No portfolio found named '{name}'")
+        self.name = name
+
+
+class PortfolioAlreadyExistsError(ApplicationError):
+    """Raised when attempting to create a portfolio under a name already in use."""
+
+    def __init__(self, name: str) -> None:
+        super().__init__(f"A portfolio named '{name}' already exists")
+        self.name = name

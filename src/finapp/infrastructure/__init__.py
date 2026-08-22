@@ -16,6 +16,14 @@ the first adapters, implementing
 - ``finapp.infrastructure.market_data.CsvMarketDataProvider``: reads a local
   CSV cache of quotes in FinApp's own normalized schema.
 
+Sprint 1.4 added portfolio persistence adapters implementing
+:class:`finapp.application.ports.PortfolioRepository`:
+
+- ``finapp.infrastructure.repositories.InMemoryPortfolioRepository``: for
+  tests and demos.
+- ``finapp.infrastructure.repositories.JsonPortfolioRepository``: one JSON
+  file per portfolio, written atomically.
+
 A live BVB data adapter (scraping/fetching real market data) is scoped for
 a later sprint.
 """
