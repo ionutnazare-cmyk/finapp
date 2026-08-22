@@ -71,8 +71,8 @@ review in Sprint 1.1; automated import-linting may be added in a later sprint.
 
 | Sprint | Scope |
 |--------|-------|
-| 1.1 | Project bootstrap: repo skeleton, tooling, CI, empty layers |
-| 1.2 | Core domain model: `Instrument`, `Position`, `Portfolio`, `Money` |
+| 1.1 | Project bootstrap: repo skeleton, tooling, CI, empty layers — **done** |
+| 1.2 | Core domain model: `Instrument`, `Position`, `Portfolio`, `Money` — **done** |
 | 1.3 | BVB market data provider (infrastructure) + application port |
 | 1.4 | Portfolio management use cases (add/remove position, valuation) |
 | 1.5 | Monthly DCA investing use case |
