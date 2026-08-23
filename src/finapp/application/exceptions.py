@@ -35,3 +35,8 @@ class PortfolioAlreadyExistsError(ApplicationError):
     def __init__(self, name: str) -> None:
         super().__init__(f"A portfolio named '{name}' already exists")
         self.name = name
+
+
+class InvalidAllocationError(ApplicationError):
+    """Raised when a DCA target allocation is malformed: empty, containing a
+    non-positive weight, or with weights that don't sum to 1."""

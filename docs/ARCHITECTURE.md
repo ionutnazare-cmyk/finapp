@@ -75,8 +75,8 @@ review in Sprint 1.1; automated import-linting may be added in a later sprint.
 | 1.2 | Core domain model: `Instrument`, `Position`, `Portfolio`, `Money` — **done** |
 | 1.3 | BVB market data provider (infrastructure) + application port — **done** |
 | 1.4 | Portfolio management use cases (add/remove position, valuation) — **done** |
-| 1.5 | Monthly DCA investing use case |
-| 1.6 | Dividend tracking and reinvestment |
+| 1.5 | Monthly DCA investing use case — **done** |
+| 1.6 | Dividend tracking and reinvestment — **done** |
 | 1.7 | TLV bonus share handling |
 | 1.8 | Streamlit dashboard: portfolio overview |
 | 1.9 | Monte Carlo simulation engine |

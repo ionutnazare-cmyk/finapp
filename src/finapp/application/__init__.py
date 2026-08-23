@@ -20,6 +20,23 @@ Sprint 1.4 added the ``PortfolioRepository`` port and the first use cases:
 - ``finapp.application.use_cases``: ``CreatePortfolio``, ``BuyShares``,
   ``SellShares``, ``GetPortfolioValuation``.
 - ``finapp.application.dto``: ``PositionValuation``, ``PortfolioValuation``.
+
+Sprint 1.5 added monthly DCA (dollar-cost averaging) investing:
+
+- ``finapp.application.use_cases.ExecuteMonthlyContribution``: splits a
+  fixed contribution across a target allocation and buys accordingly.
+- ``finapp.application.dto``: ``MonthlyContributionRequest``,
+  ``DcaAllocationResult``, ``MonthlyContributionResult``.
+- ``finapp.application.exceptions.InvalidAllocationError``.
+
+Sprint 1.6 added dividend tracking and reinvestment:
+
+- ``finapp.application.ports.DividendProvider``: known dividend payments
+  per instrument.
+- ``finapp.application.use_cases``: ``GetPortfolioDividendIncome``,
+  ``ReinvestDividends`` (a DRIP — dividend reinvestment plan).
+- ``finapp.application.dto``: ``DividendIncome``, ``PortfolioDividendIncome``,
+  ``DividendReinvestment``, ``DividendReinvestmentResult``.
 """
 
 from __future__ import annotations

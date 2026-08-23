@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 from decimal import Decimal
 
 import pytest
@@ -11,6 +12,7 @@ from finapp.domain.exceptions import (
     InsufficientSharesError,
     InvalidQuantityError,
 )
+from finapp.domain.value_objects.dividend import Dividend
 from finapp.domain.value_objects.enums import AssetType, Currency
 from finapp.domain.value_objects.money import Money
 
@@ -120,3 +122,32 @@ def test_negative_initial_quantity_rejected(tlv: Instrument) -> None:
             quantity=Decimal("-1"),
             average_cost=Money(amount=Decimal("4.00"), currency=Currency.RON),
         )
+
+
+def test_dividend_income_scales_with_quantity(tlv: Instrument) -> None:
+    position = Position(
+        instrument=tlv,
+        quantity=Decimal("200"),
+        average_cost=Money(amount=Decimal("4.00"), currency=Currency.RON),
+    )
+    dividend = Dividend(
+        symbol="TLV",
+        amount_per_share=Money(amount=Decimal("0.25"), currency=Currency.RON),
+        pay_date=date(2026, 6, 1),
+    )
+    assert position.dividend_income(dividend) == Money(amount=Decimal("50.00"), currency=Currency.RON)
+
+
+def test_dividend_income_currency_mismatch_raises(tlv: Instrument) -> None:
+    position = Position(
+        instrument=tlv,
+        quantity=Decimal("100"),
+        average_cost=Money(amount=Decimal("4.00"), currency=Currency.RON),
+    )
+    dividend = Dividend(
+        symbol="TLV",
+        amount_per_share=Money(amount=Decimal("0.25"), currency=Currency.USD),
+        pay_date=date(2026, 6, 1),
+    )
+    with pytest.raises(CurrencyMismatchError):
+        position.dividend_income(dividend)

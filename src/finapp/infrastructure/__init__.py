@@ -24,8 +24,16 @@ Sprint 1.4 added portfolio persistence adapters implementing
 - ``finapp.infrastructure.repositories.JsonPortfolioRepository``: one JSON
   file per portfolio, written atomically.
 
-A live BVB data adapter (scraping/fetching real market data) is scoped for
-a later sprint.
+Sprint 1.6 added dividend data adapters implementing
+:class:`finapp.application.ports.DividendProvider`:
+
+- ``finapp.infrastructure.dividends.StaticDividendProvider``: in-memory,
+  for tests and manual overrides.
+- ``finapp.infrastructure.dividends.CsvDividendProvider``: reads a local
+  CSV cache of dividend payments in FinApp's own normalized schema.
+
+A live BVB data adapter (scraping/fetching real market and dividend data)
+is scoped for a later sprint.
 """
 
 from __future__ import annotations

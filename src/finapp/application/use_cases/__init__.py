@@ -10,7 +10,22 @@ from __future__ import annotations
 
 from finapp.application.use_cases.buy_shares import BuyShares
 from finapp.application.use_cases.create_portfolio import CreatePortfolio
+from finapp.application.use_cases.execute_monthly_contribution import (
+    ExecuteMonthlyContribution,
+)
+from finapp.application.use_cases.get_portfolio_dividend_income import (
+    GetPortfolioDividendIncome,
+)
 from finapp.application.use_cases.get_portfolio_valuation import GetPortfolioValuation
+from finapp.application.use_cases.reinvest_dividends import ReinvestDividends
 from finapp.application.use_cases.sell_shares import SellShares
 
-__all__ = ["BuyShares", "CreatePortfolio", "GetPortfolioValuation", "SellShares"]
+__all__ = [
+    "BuyShares",
+    "CreatePortfolio",
+    "ExecuteMonthlyContribution",
+    "GetPortfolioDividendIncome",
+    "GetPortfolioValuation",
+    "ReinvestDividends",
+    "SellShares",
+]

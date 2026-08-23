@@ -12,6 +12,7 @@ from finapp.domain.exceptions import (
     InsufficientSharesError,
     InvalidQuantityError,
 )
+from finapp.domain.value_objects.dividend import Dividend
 from finapp.domain.value_objects.money import Money
 
 
@@ -66,6 +67,22 @@ class Position(BaseModel):
         """Unrealized profit/loss versus book cost at the given per-share ``price``."""
 
         return self.market_value(price) - self.book_cost()
+
+    def dividend_income(self, dividend: Dividend) -> Money:
+        """Cash income from ``dividend``, based on the quantity currently held.
+
+        This is a simplification: it applies the dividend to whatever
+        quantity is held *right now*, rather than the quantity held on the
+        dividend's actual record/ex-dividend date. Point-in-time share
+        tracking is out of scope for this sprint.
+        """
+
+        if dividend.amount_per_share.currency != self.instrument.currency:
+            raise CurrencyMismatchError(
+                expected=self.instrument.currency.value,
+                actual=dividend.amount_per_share.currency.value,
+            )
+        return dividend.amount_per_share * self.quantity
 
     def with_additional_shares(self, quantity: Decimal, price: Money) -> "Position":
         """Return a new ``Position`` reflecting a purchase of ``quantity`` more

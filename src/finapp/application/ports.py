@@ -13,6 +13,7 @@ from collections.abc import Iterable, Mapping, Sequence
 
 from finapp.application.dto import Quote
 from finapp.domain.entities.portfolio import Portfolio
+from finapp.domain.value_objects.dividend import Dividend
 
 
 class MarketDataProvider(ABC):
@@ -71,3 +72,35 @@ class PortfolioRepository(ABC):
         """Return the names of all portfolios currently persisted."""
 
         raise NotImplementedError
+
+
+class DividendProvider(ABC):
+    """Port for retrieving known dividend payments for instruments.
+
+    Infrastructure adapters (a local CSV cache, a BVB data source) implement
+    this interface. Mirrors :class:`MarketDataProvider`'s shape so the two
+    ports feel consistent to work with.
+    """
+
+    @abstractmethod
+    def get_dividends(self, symbol: str) -> Sequence[Dividend]:
+        """Return all known :class:`Dividend` payments for ``symbol``.
+
+        Returns an empty sequence if the instrument has no known dividend
+        history (e.g. it has never paid one) rather than raising — a missing
+        dividend history is a normal, expected state, unlike a missing price
+        quote.
+        """
+
+        raise NotImplementedError
+
+    def get_latest_dividend(self, symbol: str) -> Dividend | None:
+        """Return the most recent known dividend for ``symbol``, or ``None``.
+
+        The default implementation assumes :meth:`get_dividends` returns
+        payments in chronological order and takes the last one; adapters
+        that don't naturally return sorted data should override this.
+        """
+
+        dividends = self.get_dividends(symbol)
+        return dividends[-1] if dividends else None
