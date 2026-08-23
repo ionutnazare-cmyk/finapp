@@ -37,6 +37,30 @@ Sprint 1.6 added dividend tracking and reinvestment:
   ``ReinvestDividends`` (a DRIP — dividend reinvestment plan).
 - ``finapp.application.dto``: ``DividendIncome``, ``PortfolioDividendIncome``,
   ``DividendReinvestment``, ``DividendReinvestmentResult``.
+
+Sprint 1.7 added bonus share issue handling (TLV being BVB's most
+prominent recurring issuer, though the model is generic):
+
+- ``finapp.application.ports.BonusIssueProvider``: known bonus issues per
+  instrument.
+- ``finapp.application.use_cases.ApplyPortfolioBonusIssues``: applies every
+  known bonus issue across a portfolio's positions.
+- ``finapp.application.dto``: ``BonusIssueApplication``,
+  ``PortfolioBonusIssueResult``.
+
+Sprint 1.9 added Monte Carlo simulation:
+
+- ``finapp.application.use_cases.RunPortfolioMonteCarloSimulation``: wraps
+  the domain-level ``MonteCarloSimulator`` (see
+  ``finapp.domain.services.monte_carlo``), starting from a portfolio's
+  current market value.
+- ``finapp.application.dto.PortfolioMonteCarloResult``.
+
+Sprint 1.10 added mean-variance portfolio optimization:
+
+- ``finapp.application.use_cases.OptimizePortfolio``: wraps the domain-level
+  ``PortfolioOptimizer`` (see ``finapp.domain.services.portfolio_optimizer``)
+  for either objective (``OptimizationObjective``).
 """
 
 from __future__ import annotations

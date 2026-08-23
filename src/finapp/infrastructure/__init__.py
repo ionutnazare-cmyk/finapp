@@ -32,8 +32,16 @@ Sprint 1.6 added dividend data adapters implementing
 - ``finapp.infrastructure.dividends.CsvDividendProvider``: reads a local
   CSV cache of dividend payments in FinApp's own normalized schema.
 
-A live BVB data adapter (scraping/fetching real market and dividend data)
-is scoped for a later sprint.
+Sprint 1.7 added bonus share issue adapters implementing
+:class:`finapp.application.ports.BonusIssueProvider`:
+
+- ``finapp.infrastructure.bonus_issues.StaticBonusIssueProvider``: in-memory,
+  for tests and manual overrides.
+- ``finapp.infrastructure.bonus_issues.CsvBonusIssueProvider``: reads a
+  local CSV cache of bonus issue events in FinApp's own normalized schema.
+
+A live BVB data adapter (scraping/fetching real market, dividend, and
+corporate-actions data) is scoped for a later sprint.
 """
 
 from __future__ import annotations

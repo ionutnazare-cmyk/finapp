@@ -12,6 +12,7 @@ from finapp.domain.exceptions import (
     InsufficientSharesError,
     InvalidQuantityError,
 )
+from finapp.domain.value_objects.bonus_issue import BonusIssue
 from finapp.domain.value_objects.dividend import Dividend
 from finapp.domain.value_objects.enums import AssetType, Currency
 from finapp.domain.value_objects.money import Money
@@ -151,3 +152,39 @@ def test_dividend_income_currency_mismatch_raises(tlv: Instrument) -> None:
     )
     with pytest.raises(CurrencyMismatchError):
         position.dividend_income(dividend)
+
+
+def test_bonus_shares_dilute_average_cost_keep_book_cost(tlv: Instrument) -> None:
+    position = Position(
+        instrument=tlv,
+        quantity=Decimal("100"),
+        average_cost=Money(amount=Decimal("4.00"), currency=Currency.RON),
+    )
+    bonus = BonusIssue(
+        symbol="TLV", new_shares_per_held_share=Decimal("0.25"), record_date=date(2026, 5, 1)
+    )
+    updated = position.with_bonus_shares(bonus)
+
+    assert updated.quantity == Decimal("125")
+    assert updated.book_cost() == position.book_cost()
+    assert updated.average_cost == Money(amount=Decimal("400") / Decimal("125"), currency=Currency.RON)
+    # Original position is untouched (immutability).
+    assert position.quantity == Decimal("100")
+
+
+def test_bonus_shares_on_zero_quantity_position_raises(tlv: Instrument) -> None:
+    position = Position(
+        instrument=tlv,
+        quantity=Decimal("0"),
+        average_cost=Money(amount=Decimal("4.00"), currency=Currency.RON),
+    )
+    bonus = BonusIssue(
+        symbol="TLV", new_shares_per_held_share=Decimal("0.25"), record_date=date(2026, 5, 1)
+    )
+    with pytest.raises(InvalidQuantityError):
+        position.with_bonus_shares(bonus)
+
+
+def test_bonus_issue_ratio_must_be_positive() -> None:
+    with pytest.raises(Exception):  # noqa: B017 - pydantic ValidationError
+        BonusIssue(symbol="TLV", new_shares_per_held_share=Decimal("0"), record_date=date(2026, 5, 1))

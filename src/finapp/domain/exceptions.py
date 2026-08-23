@@ -44,3 +44,11 @@ class UnknownInstrumentError(DomainError):
     def __init__(self, symbol: str) -> None:
         super().__init__(f"No position found for symbol '{symbol}'")
         self.symbol = symbol
+
+
+class OptimizationFailedError(DomainError):
+    """Raised when the underlying numerical optimizer fails to converge."""
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(f"Portfolio optimization failed to converge: {reason}")
+        self.reason = reason

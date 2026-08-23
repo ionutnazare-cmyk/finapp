@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 from decimal import Decimal
 
 import pytest
@@ -11,6 +12,7 @@ from finapp.domain.exceptions import (
     InsufficientSharesError,
     UnknownInstrumentError,
 )
+from finapp.domain.value_objects.bonus_issue import BonusIssue
 from finapp.domain.value_objects.enums import AssetType, Currency
 from finapp.domain.value_objects.money import Money
 
@@ -126,3 +128,25 @@ def test_positions_view_is_read_only(portfolio: Portfolio, tlv: Instrument) -> N
 def test_blank_name_rejected() -> None:
     with pytest.raises(ValueError):
         Portfolio(name="   ", base_currency=Currency.RON)
+
+
+def test_apply_bonus_issue_adds_shares_at_zero_cost(
+    portfolio: Portfolio, tlv: Instrument
+) -> None:
+    portfolio.buy(tlv, Decimal("100"), Money(amount=Decimal("4"), currency=Currency.RON))
+    bonus = BonusIssue(
+        symbol="TLV", new_shares_per_held_share=Decimal("0.25"), record_date=date(2026, 5, 1)
+    )
+
+    updated = portfolio.apply_bonus_issue(bonus)
+
+    assert updated.quantity == Decimal("125")
+    assert portfolio.total_book_cost() == Money(amount=Decimal("400"), currency=Currency.RON)
+
+
+def test_apply_bonus_issue_unknown_symbol_raises(portfolio: Portfolio) -> None:
+    bonus = BonusIssue(
+        symbol="TLV", new_shares_per_held_share=Decimal("0.25"), record_date=date(2026, 5, 1)
+    )
+    with pytest.raises(UnknownInstrumentError):
+        portfolio.apply_bonus_issue(bonus)

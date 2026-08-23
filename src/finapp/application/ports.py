@@ -13,6 +13,7 @@ from collections.abc import Iterable, Mapping, Sequence
 
 from finapp.application.dto import Quote
 from finapp.domain.entities.portfolio import Portfolio
+from finapp.domain.value_objects.bonus_issue import BonusIssue
 from finapp.domain.value_objects.dividend import Dividend
 
 
@@ -104,3 +105,35 @@ class DividendProvider(ABC):
 
         dividends = self.get_dividends(symbol)
         return dividends[-1] if dividends else None
+
+
+class BonusIssueProvider(ABC):
+    """Port for retrieving known bonus share issues for instruments.
+
+    TLV (Banca Transilvania) is BVB's most prominent example, having issued
+    bonus shares in most recent years, but this port is generic — any
+    instrument can have a bonus issue history. Mirrors
+    :class:`DividendProvider`'s shape for consistency.
+    """
+
+    @abstractmethod
+    def get_bonus_issues(self, symbol: str) -> Sequence[BonusIssue]:
+        """Return all known :class:`BonusIssue` events for ``symbol``.
+
+        Returns an empty sequence if the instrument has no known bonus issue
+        history rather than raising — most instruments never issue bonus
+        shares, and that's expected, not a failure.
+        """
+
+        raise NotImplementedError
+
+    def get_latest_bonus_issue(self, symbol: str) -> BonusIssue | None:
+        """Return the most recent known bonus issue for ``symbol``, or ``None``.
+
+        The default implementation assumes :meth:`get_bonus_issues` returns
+        events in chronological order and takes the last one; adapters that
+        don't naturally return sorted data should override this.
+        """
+
+        issues = self.get_bonus_issues(symbol)
+        return issues[-1] if issues else None

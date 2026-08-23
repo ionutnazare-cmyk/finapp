@@ -11,9 +11,13 @@ Rules for this package (see ``docs/ARCHITECTURE.md``):
 Sprint 1.1 established this package as empty scaffolding. Sprint 1.2 added
 the core domain model:
 
-- ``finapp.domain.value_objects``: ``Money``, ``Currency``, ``AssetType``.
+- ``finapp.domain.value_objects``: ``Money``, ``Currency``, ``AssetType``,
+  ``Dividend``, ``BonusIssue``.
 - ``finapp.domain.entities``: ``Instrument``, ``Position``, ``Portfolio``.
 - ``finapp.domain.exceptions``: domain-specific error types.
+
+Sprint 1.9 added ``finapp.domain.services``: stateless quantitative logic
+(``MonteCarloSimulator``) that doesn't belong to a single entity.
 """
 
 from __future__ import annotations

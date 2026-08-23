@@ -1,61 +1,47 @@
-"""Streamlit dashboard entry point for FinApp.
+"""Streamlit dashboard entry point (the "Home" page) for FinApp.
 
-Sprint 1.1 renders a placeholder landing page confirming the app boots and
-that core dependencies (Streamlit, Plotly, Pandas) are wired correctly.
-Real dashboard pages (portfolio overview, DCA planner, Monte Carlo results,
-etc.) are introduced in later sprints.
+The actual portfolio features live in ``presentation/pages/`` — Streamlit
+automatically turns files in that directory into a sidebar menu next to
+this one. This page is just the welcome/landing screen and a summary of
+where the app's editable data files live.
 """
 
 from __future__ import annotations
 
-import pandas as pd
-import plotly.graph_objects as go
 import streamlit as st
 
 from finapp import __version__
-from finapp.config import get_settings
+from finapp.presentation.streamlit_common import data_file_paths, get_portfolio_repository
 
 
 def render() -> None:
-    """Render the Sprint 1.1 placeholder dashboard."""
-
     st.set_page_config(page_title="FinApp", page_icon="📈", layout="wide")
 
-    settings = get_settings()
-
     st.title("FinApp 📈")
-    st.caption(f"v{__version__} — project bootstrap (Sprint 1.1)")
+    st.caption(f"v{__version__} — dividend investing & retirement optimizer for the BVB")
 
-    st.info(
-        "This is a placeholder dashboard confirming the project scaffold "
-        "runs end to end. Portfolio, DCA, dividend, and Monte Carlo views "
-        "are introduced in later sprints."
+    st.markdown(
+        "Use **Portfolio Overview** in the sidebar to create a portfolio, "
+        "buy/sell shares, and see valuation, dividend income, and bonus "
+        "share issues."
     )
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("Environment")
-        st.write(
-            {
-                "environment": settings.environment.value,
-                "base_currency": settings.base_currency,
-                "data_dir": str(settings.data_dir),
-            }
-        )
+    repository = get_portfolio_repository()
+    portfolio_names = repository.list_names()
+    if portfolio_names:
+        st.write(f"You have {len(portfolio_names)} portfolio(s): {', '.join(portfolio_names)}")
+    else:
+        st.info("No portfolios yet — head to **Portfolio Overview** to create your first one.")
 
-    with col2:
-        st.subheader("Dependency smoke test")
-        sample = pd.DataFrame({"month": list(range(1, 13)), "value": [1] * 12})
-        fig = go.Figure(
-            data=[go.Bar(x=sample["month"], y=sample["value"], name="placeholder")]
-        )
-        fig.update_layout(
-            title="Placeholder chart (Plotly + Pandas)",
-            xaxis_title="Month",
-            yaxis_title="Value",
-            height=300,
-        )
-        st.plotly_chart(fig, use_container_width=True)
+    st.subheader("Data files")
+    st.caption(
+        "FinApp reads market prices, dividends, and bonus issues from local CSV "
+        "files you maintain by hand for now — automatic BVB data updates are a "
+        "later milestone. Edit these files directly to add or update data, then "
+        "use the 'Reload data files' button on Portfolio Overview."
+    )
+    for label, path in data_file_paths().items():
+        st.code(f"{label}: {path}", language=None)
 
 
 render()

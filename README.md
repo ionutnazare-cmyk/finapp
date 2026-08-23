@@ -59,9 +59,25 @@ uv sync --extra dev
 # Run the CLI placeholder
 PYTHONPATH=src uv run finapp
 
-# Run the Streamlit dashboard placeholder
+# Run the Streamlit dashboard
 PYTHONPATH=src uv run streamlit run src/finapp/presentation/streamlit_app.py
 ```
+
+Open the app and use the **Portfolio Overview** page (in the sidebar menu) to
+create a portfolio, buy/sell shares, and see valuation, dividend income, and
+bonus share issues. FinApp reads market prices, dividends, and bonus issues
+from local CSV files under `./data/` (created automatically on first run —
+edit them directly, then use the "Reload data files" button in the app):
+
+```
+data/quotes.csv          # symbol,price,currency,as_of
+data/dividends.csv       # symbol,amount_per_share,currency,pay_date
+data/bonus_issues.csv    # symbol,new_shares_per_held_share,record_date
+data/portfolios/         # one JSON file per portfolio, written by the app
+```
+
+These files are gitignored by default since they hold your personal
+portfolio data; see `tests/fixtures/*.csv` for example rows to get started.
 
 > **Note:** `PYTHONPATH=src` works around an editable-install quirk on some
 > `uv` setups where the local `finapp` package's `.pth` redirect isn't picked

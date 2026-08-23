@@ -49,6 +49,10 @@ Thumbs.db
 # Project data / outputs (generated reports, downloaded market data)
 data/raw/
 data/processed/
+data/portfolios/
+data/quotes.csv
+data/dividends.csv
+data/bonus_issues.csv
 reports/output/
 *.xlsx
 *.pdf

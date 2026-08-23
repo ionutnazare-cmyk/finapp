@@ -9,6 +9,7 @@ from types import MappingProxyType
 from finapp.domain.entities.instrument import Instrument
 from finapp.domain.entities.position import Position
 from finapp.domain.exceptions import CurrencyMismatchError, UnknownInstrumentError
+from finapp.domain.value_objects.bonus_issue import BonusIssue
 from finapp.domain.value_objects.enums import Currency
 from finapp.domain.value_objects.money import Money
 
@@ -97,6 +98,22 @@ class Portfolio:
             del self._positions[normalized_symbol]
             return None
         self._positions[normalized_symbol] = updated
+        return updated
+
+    def apply_bonus_issue(self, bonus: BonusIssue) -> Position:
+        """Apply a bonus share issue to the position matching ``bonus.symbol``,
+        adding shares at zero cost per :meth:`Position.with_bonus_shares`.
+
+        Raises :class:`~finapp.domain.exceptions.UnknownInstrumentError` if
+        this portfolio holds no position in that symbol.
+        """
+
+        existing = self._positions.get(bonus.symbol)
+        if existing is None:
+            raise UnknownInstrumentError(bonus.symbol)
+
+        updated = existing.with_bonus_shares(bonus)
+        self._positions[bonus.symbol] = updated
         return updated
 
     def total_book_cost(self) -> Money:

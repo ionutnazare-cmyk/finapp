@@ -77,10 +77,10 @@ review in Sprint 1.1; automated import-linting may be added in a later sprint.
 | 1.4 | Portfolio management use cases (add/remove position, valuation) — **done** |
 | 1.5 | Monthly DCA investing use case — **done** |
 | 1.6 | Dividend tracking and reinvestment — **done** |
-| 1.7 | TLV bonus share handling |
-| 1.8 | Streamlit dashboard: portfolio overview |
-| 1.9 | Monte Carlo simulation engine |
-| 1.10 | Portfolio optimization (SciPy-based) |
+| 1.7 | TLV bonus share handling — **done** |
+| 1.8 | Streamlit dashboard: portfolio overview — **done** |
+| 1.9 | Monte Carlo simulation engine — **done** |
+| 1.10 | Portfolio optimization (SciPy-based) — **done** |
 | 1.11 | Retirement planning module |
 | 1.12 | Fair value estimation models |
 | 1.13 | Dividend safety scoring |

@@ -10,6 +10,8 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from finapp.domain.entities.instrument import Instrument
+from finapp.domain.services.monte_carlo import MonteCarloResult
+from finapp.domain.value_objects.bonus_issue import BonusIssue
 from finapp.domain.value_objects.dividend import Dividend
 from finapp.domain.value_objects.money import Money
 
@@ -149,3 +151,32 @@ class DividendReinvestmentResult:
     portfolio_name: str
     base_currency_total_reinvested: Money
     reinvestments: tuple[DividendReinvestment, ...]
+
+
+@dataclass(frozen=True)
+class BonusIssueApplication:
+    """The outcome of applying one bonus share issue to a held position."""
+
+    instrument: Instrument
+    bonus: BonusIssue
+    quantity_before: Decimal
+    quantity_after: Decimal
+    additional_shares: Decimal
+
+
+@dataclass(frozen=True)
+class PortfolioBonusIssueResult:
+    """The full outcome of applying every known bonus issue across a portfolio's
+    positions. Positions with no known bonus issue are simply absent from
+    ``applications`` — most instruments never issue bonus shares."""
+
+    portfolio_name: str
+    applications: tuple[BonusIssueApplication, ...]
+
+
+@dataclass(frozen=True)
+class PortfolioMonteCarloResult:
+    """A Monte Carlo simulation's outcome, tied to the portfolio it started from."""
+
+    portfolio_name: str
+    simulation: MonteCarloResult

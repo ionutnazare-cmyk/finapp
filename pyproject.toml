@@ -109,6 +109,24 @@ exclude = ["^tests/"]
 module = ["plotly.*", "streamlit.*", "scipy.*", "openpyxl.*"]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+# Streamlit's decorators (e.g. st.cache_resource) are untyped, which would
+# otherwise trip disallow_untyped_decorators (part of the strict bundle) on
+# every cached accessor in the presentation layer. Domain, application, and
+# infrastructure remain fully strict; only this UI glue layer is relaxed.
+module = ["finapp.presentation.*"]
+disallow_untyped_decorators = false
+
+[[tool.mypy.overrides]]
+# Numerically-heavy domain services (Monte Carlo, portfolio optimization)
+# use bare `np.ndarray` rather than fully parameterizing
+# `np.ndarray[Any, np.dtype[np.float64]]` everywhere, which
+# disallow_any_generics (part of the strict bundle) would otherwise flag.
+# Business-rule modules (entities, value_objects, exceptions) stay fully
+# strict; only this numerical-computation module is relaxed.
+module = ["finapp.domain.services.*"]
+disallow_any_generics = false
+
 [tool.pydantic-mypy]
 init_forbid_extra = true
 init_typed = true

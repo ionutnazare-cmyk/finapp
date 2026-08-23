@@ -12,6 +12,7 @@ from finapp.domain.exceptions import (
     InsufficientSharesError,
     InvalidQuantityError,
 )
+from finapp.domain.value_objects.bonus_issue import BonusIssue
 from finapp.domain.value_objects.dividend import Dividend
 from finapp.domain.value_objects.money import Money
 
@@ -83,6 +84,34 @@ class Position(BaseModel):
                 actual=dividend.amount_per_share.currency.value,
             )
         return dividend.amount_per_share * self.quantity
+
+    def with_bonus_shares(self, bonus: BonusIssue) -> "Position":
+        """Return a new ``Position`` reflecting a bonus share issue: new
+        shares are added at zero cost, so the existing book cost is spread
+        over the larger quantity — average cost per share decreases, but
+        total book cost is unchanged.
+
+        Raises :class:`~finapp.domain.exceptions.InvalidQuantityError` if
+        this position currently holds zero shares (nothing to apply a bonus
+        ratio to).
+        """
+
+        if self.quantity == Decimal("0"):
+            raise InvalidQuantityError(
+                "Cannot apply a bonus issue to a position with zero shares"
+            )
+
+        additional_quantity = self.quantity * bonus.new_shares_per_held_share
+        new_quantity = self.quantity + additional_quantity
+        new_average_cost = Money(
+            amount=self.book_cost().amount / new_quantity,
+            currency=self.instrument.currency,
+        )
+        return Position(
+            instrument=self.instrument,
+            quantity=new_quantity,
+            average_cost=new_average_cost,
+        )
 
     def with_additional_shares(self, quantity: Decimal, price: Money) -> "Position":
         """Return a new ``Position`` reflecting a purchase of ``quantity`` more
