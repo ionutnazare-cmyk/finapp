@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, field_validator
 
 from finapp.domain.entities.instrument import Instrument
 from finapp.domain.services.monte_carlo import MonteCarloResult
+from finapp.domain.services.retirement_planning import RetirementPlanResult
 from finapp.domain.value_objects.bonus_issue import BonusIssue
 from finapp.domain.value_objects.dividend import Dividend
 from finapp.domain.value_objects.money import Money
@@ -180,3 +181,11 @@ class PortfolioMonteCarloResult:
 
     portfolio_name: str
     simulation: MonteCarloResult
+
+
+@dataclass(frozen=True)
+class PortfolioRetirementPlanResult:
+    """A retirement plan's outcome, tied to the portfolio it started from."""
+
+    portfolio_name: str
+    plan: RetirementPlanResult

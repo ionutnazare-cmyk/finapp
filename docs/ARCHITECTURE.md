@@ -81,7 +81,7 @@ review in Sprint 1.1; automated import-linting may be added in a later sprint.
 | 1.8 | Streamlit dashboard: portfolio overview — **done** |
 | 1.9 | Monte Carlo simulation engine — **done** |
 | 1.10 | Portfolio optimization (SciPy-based) — **done** |
-| 1.11 | Retirement planning module |
+| 1.11 | Retirement planning module — **done** |
 | 1.12 | Fair value estimation models |
 | 1.13 | Dividend safety scoring |
 | 1.14 | Excel/PDF reporting |

@@ -8,6 +8,8 @@ ports — see ``docs/ARCHITECTURE.md``.
   ``MonteCarloResult``, ``MonteCarloSimulator``.
 - ``finapp.domain.services.portfolio_optimizer``: ``OptimizationInput``,
   ``OptimizedAllocation``, ``OptimizationResult``, ``PortfolioOptimizer``.
+- ``finapp.domain.services.retirement_planning``: ``RetirementPlanAssumptions``,
+  ``RetirementPlanResult``, ``RetirementPlanner``.
 """
 
 from __future__ import annotations
@@ -23,6 +25,11 @@ from finapp.domain.services.portfolio_optimizer import (
     OptimizedAllocation,
     PortfolioOptimizer,
 )
+from finapp.domain.services.retirement_planning import (
+    RetirementPlanAssumptions,
+    RetirementPlanner,
+    RetirementPlanResult,
+)
 
 __all__ = [
     "MonteCarloAssumptions",
@@ -32,4 +39,7 @@ __all__ = [
     "OptimizationResult",
     "OptimizedAllocation",
     "PortfolioOptimizer",
+    "RetirementPlanAssumptions",
+    "RetirementPlanResult",
+    "RetirementPlanner",
 ]

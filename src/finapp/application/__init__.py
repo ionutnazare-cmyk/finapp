@@ -61,6 +61,14 @@ Sprint 1.10 added mean-variance portfolio optimization:
 - ``finapp.application.use_cases.OptimizePortfolio``: wraps the domain-level
   ``PortfolioOptimizer`` (see ``finapp.domain.services.portfolio_optimizer``)
   for either objective (``OptimizationObjective``).
+
+Sprint 1.11 added retirement planning (accumulation + decumulation):
+
+- ``finapp.application.use_cases.RunPortfolioRetirementPlan``: wraps the
+  domain-level ``RetirementPlanner`` (see
+  ``finapp.domain.services.retirement_planning``), starting from a
+  portfolio's current market value.
+- ``finapp.application.dto.PortfolioRetirementPlanResult``.
 """
 
 from __future__ import annotations
