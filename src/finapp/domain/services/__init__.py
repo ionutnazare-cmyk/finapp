@@ -10,10 +10,13 @@ ports — see ``docs/ARCHITECTURE.md``.
   ``OptimizedAllocation``, ``OptimizationResult``, ``PortfolioOptimizer``.
 - ``finapp.domain.services.retirement_planning``: ``RetirementPlanAssumptions``,
   ``RetirementPlanResult``, ``RetirementPlanner``.
+- ``finapp.domain.services.fair_value``: ``FairValueEstimate``,
+  ``FairValueEstimator``.
 """
 
 from __future__ import annotations
 
+from finapp.domain.services.fair_value import FairValueEstimate, FairValueEstimator
 from finapp.domain.services.monte_carlo import (
     MonteCarloAssumptions,
     MonteCarloResult,
@@ -32,6 +35,8 @@ from finapp.domain.services.retirement_planning import (
 )
 
 __all__ = [
+    "FairValueEstimate",
+    "FairValueEstimator",
     "MonteCarloAssumptions",
     "MonteCarloResult",
     "MonteCarloSimulator",

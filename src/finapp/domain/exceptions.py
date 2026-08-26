@@ -52,3 +52,9 @@ class OptimizationFailedError(DomainError):
     def __init__(self, reason: str) -> None:
         super().__init__(f"Portfolio optimization failed to converge: {reason}")
         self.reason = reason
+
+
+class FairValueModelError(DomainError):
+    """Raised when a fair value model's inputs make its formula undefined
+    (e.g. a discount rate not exceeding the assumed growth rate in the
+    Gordon Growth model, or non-positive earnings in a P/E model)."""

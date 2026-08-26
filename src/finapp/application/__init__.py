@@ -69,6 +69,14 @@ Sprint 1.11 added retirement planning (accumulation + decumulation):
   ``finapp.domain.services.retirement_planning``), starting from a
   portfolio's current market value.
 - ``finapp.application.dto.PortfolioRetirementPlanResult``.
+
+Sprint 1.12 added fair value estimation:
+
+- ``finapp.application.use_cases.EstimateFairValue``: wraps the domain-level
+  ``FairValueEstimator`` (see ``finapp.domain.services.fair_value``) for a
+  chosen model (``FairValueModel``), auto-filling the current price from a
+  ``MarketDataProvider`` when available.
+- ``finapp.application.exceptions.InvalidFairValueRequestError``.
 """
 
 from __future__ import annotations

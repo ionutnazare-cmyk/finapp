@@ -40,3 +40,8 @@ class PortfolioAlreadyExistsError(ApplicationError):
 class InvalidAllocationError(ApplicationError):
     """Raised when a DCA target allocation is malformed: empty, containing a
     non-positive weight, or with weights that don't sum to 1."""
+
+
+class InvalidFairValueRequestError(ApplicationError):
+    """Raised when a fair value request is missing the inputs its chosen
+    model needs (e.g. asking for Gordon Growth DDM without a growth rate)."""
