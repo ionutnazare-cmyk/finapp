@@ -77,6 +77,13 @@ Sprint 1.12 added fair value estimation:
   chosen model (``FairValueModel``), auto-filling the current price from a
   ``MarketDataProvider`` when available.
 - ``finapp.application.exceptions.InvalidFairValueRequestError``.
+
+Sprint 1.13 added dividend safety scoring:
+
+- ``finapp.application.use_cases.ScoreDividendSafety``: wraps the
+  domain-level ``DividendSafetyScorer`` (see
+  ``finapp.domain.services.dividend_safety``), auto-filling dividend
+  history from a ``DividendProvider`` when available.
 """
 
 from __future__ import annotations

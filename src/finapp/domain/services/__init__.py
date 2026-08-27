@@ -12,10 +12,20 @@ ports — see ``docs/ARCHITECTURE.md``.
   ``RetirementPlanResult``, ``RetirementPlanner``.
 - ``finapp.domain.services.fair_value``: ``FairValueEstimate``,
   ``FairValueEstimator``.
+- ``finapp.domain.services.dividend_safety``: ``DividendSafetyInputs``,
+  ``DividendSafetyScore``, ``DividendSafetyScoreComponent``,
+  ``DividendSafetyRating``, ``DividendSafetyScorer``.
 """
 
 from __future__ import annotations
 
+from finapp.domain.services.dividend_safety import (
+    DividendSafetyInputs,
+    DividendSafetyRating,
+    DividendSafetyScore,
+    DividendSafetyScoreComponent,
+    DividendSafetyScorer,
+)
 from finapp.domain.services.fair_value import FairValueEstimate, FairValueEstimator
 from finapp.domain.services.monte_carlo import (
     MonteCarloAssumptions,
@@ -35,6 +45,11 @@ from finapp.domain.services.retirement_planning import (
 )
 
 __all__ = [
+    "DividendSafetyInputs",
+    "DividendSafetyRating",
+    "DividendSafetyScore",
+    "DividendSafetyScoreComponent",
+    "DividendSafetyScorer",
     "FairValueEstimate",
     "FairValueEstimator",
     "MonteCarloAssumptions",

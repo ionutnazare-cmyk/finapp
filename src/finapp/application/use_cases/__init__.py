@@ -35,6 +35,7 @@ from finapp.application.use_cases.run_portfolio_monte_carlo_simulation import (
 from finapp.application.use_cases.run_portfolio_retirement_plan import (
     RunPortfolioRetirementPlan,
 )
+from finapp.application.use_cases.score_dividend_safety import ScoreDividendSafety
 from finapp.application.use_cases.sell_shares import SellShares
 
 __all__ = [
@@ -51,5 +52,6 @@ __all__ = [
     "ReinvestDividends",
     "RunPortfolioMonteCarloSimulation",
     "RunPortfolioRetirementPlan",
+    "ScoreDividendSafety",
     "SellShares",
 ]

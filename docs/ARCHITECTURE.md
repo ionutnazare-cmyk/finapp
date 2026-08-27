@@ -83,7 +83,7 @@ review in Sprint 1.1; automated import-linting may be added in a later sprint.
 | 1.10 | Portfolio optimization (SciPy-based) — **done** |
 | 1.11 | Retirement planning module — **done** |
 | 1.12 | Fair value estimation models — **done** |
-| 1.13 | Dividend safety scoring |
+| 1.13 | Dividend safety scoring — **done** |
 | 1.14 | Excel/PDF reporting |
 | 1.15 | Automatic BVB data update scheduler |
 
