@@ -14,7 +14,12 @@ from pathlib import Path
 
 import streamlit as st
 
+from finapp.application.exceptions import ApplicationError
+from finapp.application.use_cases.create_portfolio import CreatePortfolio
 from finapp.config import get_settings
+from finapp.domain.entities.portfolio import Portfolio
+from finapp.domain.exceptions import DomainError
+from finapp.domain.value_objects.enums import Currency
 from finapp.infrastructure.bonus_issues.csv_provider import CsvBonusIssueProvider
 from finapp.infrastructure.dividends.csv_provider import CsvDividendProvider
 from finapp.infrastructure.market_data.csv_provider import CsvMarketDataProvider
@@ -85,3 +90,48 @@ def refresh_all_providers() -> None:
     get_market_data_provider().refresh()
     get_dividend_provider().refresh()
     get_bonus_issue_provider().refresh()
+
+
+def select_or_create_portfolio(key_prefix: str = "portfolio") -> Portfolio | None:
+    """Render the standard sidebar portfolio picker/creator.
+
+    Shared by every page that needs an existing portfolio to work against
+    (Portfolio Overview, Monte Carlo, Retirement Planning), so the same
+    control looks and behaves identically everywhere. ``key_prefix`` keeps
+    widget keys unique when a page renders this more than once (it
+    shouldn't need to, but Streamlit requires unique keys per widget
+    regardless).
+
+    Returns ``None`` if nothing is selected yet (including immediately
+    after creating a new portfolio, which triggers a rerun).
+    """
+
+    repository = get_portfolio_repository()
+    names = list(repository.list_names())
+
+    st.sidebar.header("Portfolio")
+    choice = st.sidebar.selectbox(
+        "Select a portfolio", ["— New portfolio —", *names], key=f"{key_prefix}_select"
+    )
+
+    if choice != "— New portfolio —":
+        return repository.get(choice)
+
+    with st.sidebar.form(f"{key_prefix}_create_form"):
+        name = st.text_input("New portfolio name")
+        base_currency = st.selectbox("Base currency", list(Currency))
+        submitted = st.form_submit_button("Create portfolio")
+
+    if submitted:
+        if not name.strip():
+            st.sidebar.error("Portfolio name cannot be blank.")
+            return None
+        try:
+            portfolio = CreatePortfolio(repository).execute(name.strip(), base_currency)
+        except (ApplicationError, DomainError) as exc:
+            st.sidebar.error(str(exc))
+            return None
+        st.sidebar.success(f"Created portfolio '{portfolio.name}'.")
+        st.rerun()
+
+    return None

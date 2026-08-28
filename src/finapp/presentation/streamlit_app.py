@@ -21,9 +21,17 @@ def render() -> None:
     st.caption(f"v{__version__} — dividend investing & retirement optimizer for the BVB")
 
     st.markdown(
-        "Use **Portfolio Overview** in the sidebar to create a portfolio, "
-        "buy/sell shares, and see valuation, dividend income, and bonus "
-        "share issues."
+        "Use the sidebar to navigate:\n"
+        "- **Portfolio Overview** — create a portfolio, buy/sell shares, see "
+        "valuation, dividend income, and bonus share issues\n"
+        "- **Monte Carlo** — project a range of future portfolio values\n"
+        "- **Retirement Planning** — simulate contributions then withdrawals, "
+        "and your probability of running out of money\n"
+        "- **Portfolio Optimizer** — mean-variance optimal weights for a set "
+        "of assets\n"
+        "- **Fair Value** — Gordon Growth DDM, dividend yield target, and "
+        "P/E-relative valuation for any symbol\n"
+        "- **Dividend Safety** — a transparent, rule-based dividend safety score"
     )
 
     repository = get_portfolio_repository()

@@ -21,7 +21,6 @@ from finapp.application.use_cases.apply_portfolio_bonus_issues import (
     ApplyPortfolioBonusIssues,
 )
 from finapp.application.use_cases.buy_shares import BuyShares
-from finapp.application.use_cases.create_portfolio import CreatePortfolio
 from finapp.application.use_cases.execute_monthly_contribution import (
     ExecuteMonthlyContribution,
 )
@@ -34,7 +33,7 @@ from finapp.application.use_cases.sell_shares import SellShares
 from finapp.domain.entities.instrument import Instrument
 from finapp.domain.entities.portfolio import Portfolio
 from finapp.domain.exceptions import DomainError
-from finapp.domain.value_objects.enums import AssetType, Currency
+from finapp.domain.value_objects.enums import AssetType
 from finapp.domain.value_objects.money import Money
 from finapp.presentation.streamlit_common import (
     get_bonus_issue_provider,
@@ -42,6 +41,7 @@ from finapp.presentation.streamlit_common import (
     get_market_data_provider,
     get_portfolio_repository,
     refresh_all_providers,
+    select_or_create_portfolio,
 )
 
 st.set_page_config(page_title="Portfolio Overview — FinApp", page_icon="📊", layout="wide")
@@ -60,36 +60,6 @@ def _to_decimal(raw: float, field_label: str) -> Decimal | None:
     except InvalidOperation:
         st.error(f"'{field_label}' is not a valid number.")
         return None
-
-
-def _select_or_create_portfolio() -> Portfolio | None:
-    repository = get_portfolio_repository()
-    names = list(repository.list_names())
-
-    st.sidebar.header("Portfolio")
-    choice = st.sidebar.selectbox("Select a portfolio", ["— New portfolio —", *names])
-
-    if choice != "— New portfolio —":
-        return repository.get(choice)
-
-    with st.sidebar.form("create_portfolio_form"):
-        name = st.text_input("New portfolio name")
-        base_currency = st.selectbox("Base currency", list(Currency))
-        submitted = st.form_submit_button("Create portfolio")
-
-    if submitted:
-        if not name.strip():
-            st.sidebar.error("Portfolio name cannot be blank.")
-            return None
-        try:
-            portfolio = CreatePortfolio(repository).execute(name.strip(), base_currency)
-        except (ApplicationError, DomainError) as exc:
-            st.sidebar.error(str(exc))
-            return None
-        st.sidebar.success(f"Created portfolio '{portfolio.name}'.")
-        st.rerun()
-
-    return None
 
 
 def _render_overview_tab(portfolio: Portfolio) -> None:
@@ -393,7 +363,7 @@ def _render_dca_tab(portfolio: Portfolio) -> None:
 def render() -> None:
     st.title("Portfolio Overview")
 
-    portfolio = _select_or_create_portfolio()
+    portfolio = select_or_create_portfolio()
 
     if st.sidebar.button("Reload data files"):
         refresh_all_providers()

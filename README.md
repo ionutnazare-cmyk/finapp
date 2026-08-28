@@ -63,9 +63,19 @@ PYTHONPATH=src uv run finapp
 PYTHONPATH=src uv run streamlit run src/finapp/presentation/streamlit_app.py
 ```
 
-Open the app and use the **Portfolio Overview** page (in the sidebar menu) to
-create a portfolio, buy/sell shares, and see valuation, dividend income, and
-bonus share issues. FinApp reads market prices, dividends, and bonus issues
+Open the app and use the pages in the sidebar menu:
+
+- **Portfolio Overview** — create a portfolio, buy/sell shares, and see
+  valuation, dividend income, and bonus share issues
+- **Monte Carlo** — project a range of future portfolio values
+- **Retirement Planning** — simulate contributions then withdrawals, and your
+  probability of running out of money
+- **Portfolio Optimizer** — mean-variance optimal weights for a set of assets
+  (not tied to a stored portfolio — enter your own assumptions)
+- **Fair Value** — Gordon Growth DDM, dividend yield target, and P/E-relative
+  valuation for any symbol (not tied to a stored portfolio)
+- **Dividend Safety** — a transparent, rule-based dividend safety score
+  (not tied to a stored portfolio) FinApp reads market prices, dividends, and bonus issues
 from local CSV files under `./data/` (created automatically on first run —
 edit them directly, then use the "Reload data files" button in the app):
 
