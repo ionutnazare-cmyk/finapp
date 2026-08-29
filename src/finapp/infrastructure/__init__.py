@@ -40,6 +40,14 @@ Sprint 1.7 added bonus share issue adapters implementing
 - ``finapp.infrastructure.bonus_issues.CsvBonusIssueProvider``: reads a
   local CSV cache of bonus issue events in FinApp's own normalized schema.
 
+Sprint 1.14 added report exporters implementing
+:class:`finapp.application.ports.PortfolioReportExporter`:
+
+- ``finapp.infrastructure.reporting.ExcelPortfolioReportExporter``: an
+  .xlsx workbook (openpyxl) with Summary/Positions/Dividends sheets.
+- ``finapp.infrastructure.reporting.PdfPortfolioReportExporter``: a PDF
+  document (reportlab) with the same content.
+
 A live BVB data adapter (scraping/fetching real market, dividend, and
 corporate-actions data) is scoped for a later sprint.
 """

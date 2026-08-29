@@ -34,6 +34,7 @@ dependencies = [
     "openpyxl>=3.1",
     "anyio>=4.4",
     "pyyaml>=6.0",
+    "reportlab>=4.0",
 ]
 
 [project.optional-dependencies]
@@ -106,7 +107,7 @@ mypy_path = "src"
 exclude = ["^tests/"]
 
 [[tool.mypy.overrides]]
-module = ["plotly.*", "streamlit.*", "scipy.*", "openpyxl.*"]
+module = ["plotly.*", "streamlit.*", "scipy.*", "openpyxl.*", "reportlab.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

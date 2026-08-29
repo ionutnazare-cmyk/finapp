@@ -11,6 +11,7 @@ from __future__ import annotations
 from finapp.application.use_cases.apply_portfolio_bonus_issues import (
     ApplyPortfolioBonusIssues,
 )
+from finapp.application.use_cases.build_portfolio_report import BuildPortfolioReport
 from finapp.application.use_cases.buy_shares import BuyShares
 from finapp.application.use_cases.create_portfolio import CreatePortfolio
 from finapp.application.use_cases.estimate_fair_value import (
@@ -19,6 +20,10 @@ from finapp.application.use_cases.estimate_fair_value import (
 )
 from finapp.application.use_cases.execute_monthly_contribution import (
     ExecuteMonthlyContribution,
+)
+from finapp.application.use_cases.export_portfolio_report import (
+    ExportPortfolioReport,
+    ReportFormat,
 )
 from finapp.application.use_cases.get_portfolio_dividend_income import (
     GetPortfolioDividendIncome,
@@ -40,16 +45,19 @@ from finapp.application.use_cases.sell_shares import SellShares
 
 __all__ = [
     "ApplyPortfolioBonusIssues",
+    "BuildPortfolioReport",
     "BuyShares",
     "CreatePortfolio",
     "EstimateFairValue",
     "ExecuteMonthlyContribution",
+    "ExportPortfolioReport",
     "FairValueModel",
     "GetPortfolioDividendIncome",
     "GetPortfolioValuation",
     "OptimizationObjective",
     "OptimizePortfolio",
     "ReinvestDividends",
+    "ReportFormat",
     "RunPortfolioMonteCarloSimulation",
     "RunPortfolioRetirementPlan",
     "ScoreDividendSafety",

@@ -84,6 +84,17 @@ Sprint 1.13 added dividend safety scoring:
   domain-level ``DividendSafetyScorer`` (see
   ``finapp.domain.services.dividend_safety``), auto-filling dividend
   history from a ``DividendProvider`` when available.
+
+Sprint 1.14 added Excel/PDF reporting:
+
+- ``finapp.application.ports.PortfolioReportExporter``: renders a report to
+  a file format.
+- ``finapp.application.use_cases.BuildPortfolioReport``: aggregates
+  valuation and (optional) dividend income into one
+  ``PortfolioReport``, shared by every export format.
+- ``finapp.application.use_cases.ExportPortfolioReport``: builds a report
+  and writes it via a chosen ``ReportFormat`` (``EXCEL``/``PDF``).
+- ``finapp.application.dto.PortfolioReport``.
 """
 
 from __future__ import annotations

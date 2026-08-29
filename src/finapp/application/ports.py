@@ -10,8 +10,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Mapping, Sequence
+from pathlib import Path
 
-from finapp.application.dto import Quote
+from finapp.application.dto import PortfolioReport, Quote
 from finapp.domain.entities.portfolio import Portfolio
 from finapp.domain.value_objects.bonus_issue import BonusIssue
 from finapp.domain.value_objects.dividend import Dividend
@@ -137,3 +138,23 @@ class BonusIssueProvider(ABC):
 
         issues = self.get_bonus_issues(symbol)
         return issues[-1] if issues else None
+
+
+class PortfolioReportExporter(ABC):
+    """Port for rendering a :class:`~finapp.application.dto.PortfolioReport`
+    to a specific file format (Excel, PDF, ...).
+
+    Infrastructure adapters implement this per format. There's exactly one
+    concrete implementation per format for now, but the abstraction still
+    earns its keep: it keeps ``openpyxl``/``reportlab`` out of the
+    application and domain layers, and use cases depend only on "something
+    that can export a report," not on a specific library.
+    """
+
+    @abstractmethod
+    def export(self, report: PortfolioReport, output_path: Path) -> Path:
+        """Render ``report`` and write it to ``output_path``, creating parent
+        directories as needed. Returns the path actually written (normally
+        just ``output_path`` unchanged)."""
+
+        raise NotImplementedError

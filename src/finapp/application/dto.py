@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -189,3 +189,19 @@ class PortfolioRetirementPlanResult:
 
     portfolio_name: str
     plan: RetirementPlanResult
+
+
+@dataclass(frozen=True)
+class PortfolioReport:
+    """Aggregated data for exporting a portfolio report (Excel/PDF).
+
+    Bundles valuation and (optional) dividend income together so both
+    export formats render from exactly the same figures, computed once —
+    an Excel and a PDF export of the same portfolio at the same moment
+    will always agree.
+    """
+
+    portfolio_name: str
+    generated_at: datetime
+    valuation: PortfolioValuation
+    dividend_income: PortfolioDividendIncome | None = None
