@@ -45,3 +45,14 @@ class InvalidAllocationError(ApplicationError):
 class InvalidFairValueRequestError(ApplicationError):
     """Raised when a fair value request is missing the inputs its chosen
     model needs (e.g. asking for Gordon Growth DDM without a growth rate)."""
+
+
+class BvbFetchError(ApplicationError):
+    """Raised when fetching live data directly from BVB fails: a network or
+    HTTP error, or a response whose structure didn't match what the fetcher
+    adapter expects (e.g. BVB changed its page layout)."""
+
+    def __init__(self, symbol: str, reason: str) -> None:
+        super().__init__(f"Failed to fetch BVB data for '{symbol}': {reason}")
+        self.symbol = symbol
+        self.reason = reason

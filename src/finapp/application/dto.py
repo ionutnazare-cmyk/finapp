@@ -205,3 +205,17 @@ class PortfolioReport:
     generated_at: datetime
     valuation: PortfolioValuation
     dividend_income: PortfolioDividendIncome | None = None
+
+
+@dataclass(frozen=True)
+class MarketDataRefreshResult:
+    """Outcome of a (possibly skipped) BVB data refresh attempt.
+
+    ``attempted`` is ``False`` when the freshness policy decided a refresh
+    wasn't due yet — everything else is then empty/reflects no work done.
+    """
+
+    attempted: bool
+    updated_symbols: tuple[str, ...]
+    failed_symbols: tuple[str, ...]
+    as_of: datetime

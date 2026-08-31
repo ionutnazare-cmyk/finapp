@@ -10,19 +10,27 @@ in its sidebar menu.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import streamlit as st
 
+from finapp.application.dto import MarketDataRefreshResult
 from finapp.application.exceptions import ApplicationError
 from finapp.application.use_cases.create_portfolio import CreatePortfolio
+from finapp.application.use_cases.refresh_market_data_from_bvb import (
+    RefreshMarketDataFromBvb,
+)
 from finapp.config import get_settings
 from finapp.domain.entities.portfolio import Portfolio
 from finapp.domain.exceptions import DomainError
+from finapp.domain.services.data_freshness import DataFreshnessPolicy
 from finapp.domain.value_objects.enums import Currency
 from finapp.infrastructure.bonus_issues.csv_provider import CsvBonusIssueProvider
 from finapp.infrastructure.dividends.csv_provider import CsvDividendProvider
 from finapp.infrastructure.market_data.csv_provider import CsvMarketDataProvider
+from finapp.infrastructure.market_data.csv_quote_cache_writer import CsvQuoteCacheWriter
 from finapp.infrastructure.repositories.json_portfolio_repository import (
     JsonPortfolioRepository,
 )
@@ -135,3 +143,47 @@ def select_or_create_portfolio(key_prefix: str = "portfolio") -> Portfolio | Non
         st.rerun()
 
     return None
+
+
+def maybe_refresh_bvb_prices(
+    symbols: Sequence[str], interval_minutes: int = 30, force: bool = False
+) -> MarketDataRefreshResult | None:
+    """Best-effort automatic BVB price refresh for ``symbols``.
+
+    Gated by a :class:`~finapp.domain.services.data_freshness.DataFreshnessPolicy`
+    based on ``quotes.csv``'s last-modified time, so calling this on every
+    page render (safe — it's cheap when not due) only actually hits BVB
+    roughly every ``interval_minutes``. Pass ``force=True`` to bypass that
+    and refresh immediately regardless of when it last ran.
+
+    Returns ``None`` if the optional ``bvb-live`` dependency group isn't
+    installed, so callers can distinguish "unavailable" from "not due yet"
+    (``attempted=False`` on the result). See
+    :mod:`finapp.infrastructure.market_data.bvb_website_fetcher` for
+    important reliability caveats before trusting this in production.
+    """
+
+    try:
+        from finapp.infrastructure.market_data.bvb_website_fetcher import (
+            BvbWebsiteFetcher,
+        )
+    except ImportError:
+        return None
+
+    settings = get_settings()
+    quotes_path = settings.data_dir / "quotes.csv"
+
+    last_updated = None
+    if quotes_path.exists() and not force:
+        last_updated = datetime.fromtimestamp(quotes_path.stat().st_mtime, tz=UTC)
+
+    policy = DataFreshnessPolicy(refresh_interval=timedelta(minutes=interval_minutes))
+    use_case = RefreshMarketDataFromBvb(
+        BvbWebsiteFetcher(), CsvQuoteCacheWriter(quotes_path), policy
+    )
+    result = use_case.execute(list(symbols), last_updated=last_updated, now=datetime.now(UTC))
+
+    if result.attempted and result.updated_symbols:
+        get_market_data_provider().refresh()
+
+    return result

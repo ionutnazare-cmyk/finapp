@@ -40,6 +40,7 @@ from finapp.presentation.streamlit_common import (
     get_dividend_provider,
     get_market_data_provider,
     get_portfolio_repository,
+    maybe_refresh_bvb_prices,
     refresh_all_providers,
     select_or_create_portfolio,
 )
@@ -369,6 +370,41 @@ def render() -> None:
         refresh_all_providers()
         st.sidebar.success("Reloaded quotes, dividends, and bonus issues from disk.")
         st.rerun()
+
+    if portfolio is not None and not portfolio.is_empty():
+        st.sidebar.divider()
+        st.sidebar.subheader("Live BVB prices (experimental)")
+        held_symbols = list(portfolio.positions.keys())
+
+        with st.spinner("Checking BVB for price updates..."):
+            auto_result = maybe_refresh_bvb_prices(held_symbols)
+
+        if auto_result is None:
+            st.sidebar.caption(
+                "Install `uv sync --extra bvb-live` to enable automatic price "
+                "fetching from BVB — see README for reliability caveats."
+            )
+        else:
+            if auto_result.updated_symbols:
+                st.sidebar.success(
+                    f"Refreshed from BVB: {', '.join(auto_result.updated_symbols)}"
+                )
+            if auto_result.failed_symbols:
+                st.sidebar.warning(
+                    f"Couldn't fetch from BVB: {', '.join(auto_result.failed_symbols)}"
+                )
+            if st.sidebar.button("Force refresh now"):
+                with st.spinner("Fetching latest prices from BVB..."):
+                    forced_result = maybe_refresh_bvb_prices(held_symbols, force=True)
+                if forced_result is not None and forced_result.updated_symbols:
+                    st.sidebar.success(
+                        f"Refreshed from BVB: {', '.join(forced_result.updated_symbols)}"
+                    )
+                if forced_result is not None and forced_result.failed_symbols:
+                    st.sidebar.warning(
+                        f"Couldn't fetch from BVB: {', '.join(forced_result.failed_symbols)}"
+                    )
+                st.rerun()
 
     if portfolio is None:
         st.info("Select or create a portfolio in the sidebar to get started.")

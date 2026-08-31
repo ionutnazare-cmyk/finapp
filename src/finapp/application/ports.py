@@ -158,3 +158,54 @@ class PortfolioReportExporter(ABC):
         just ``output_path`` unchanged)."""
 
         raise NotImplementedError
+
+
+class BvbDataFetcher(ABC):
+    """Port for fetching current market data directly from BVB (rather than
+    from FinApp's own local CSV cache).
+
+    Scoped to quotes only: BVB's public per-instrument pages publish
+    dividend and bonus-issue information only as PDF announcements, not as
+    structured data, so those remain manually-maintained CSVs for now — see
+    ``finapp.infrastructure.market_data.bvb_website_fetcher`` for the
+    concrete adapter and its caveats.
+    """
+
+    @abstractmethod
+    def fetch_quote(self, symbol: str) -> Quote:
+        """Fetch the current quote for ``symbol`` directly from BVB.
+
+        Raises :class:`~finapp.application.exceptions.BvbFetchError` if the
+        fetch fails for any reason (network error, HTTP error, or the
+        response didn't contain what this adapter expects).
+        """
+
+        raise NotImplementedError
+
+    def fetch_quotes(self, symbols: Iterable[str]) -> Mapping[str, Quote]:
+        """Fetch quotes for multiple symbols. The default implementation
+        calls :meth:`fetch_quote` once per symbol and lets a
+        :class:`~finapp.application.exceptions.BvbFetchError` from any one
+        symbol propagate — callers wanting partial-failure tolerance across
+        a batch (one bad symbol shouldn't block the rest) should catch
+        per-symbol, as
+        :class:`~finapp.application.use_cases.refresh_market_data_from_bvb.RefreshMarketDataFromBvb`
+        does, rather than relying on this default.
+        """
+
+        return {symbol: self.fetch_quote(symbol) for symbol in symbols}
+
+
+class QuoteCacheWriter(ABC):
+    """Port for persisting freshly-fetched quotes into whatever local cache
+    a :class:`MarketDataProvider` reads from (e.g. a CSV file), so the next
+    read picks up the refreshed data.
+    """
+
+    @abstractmethod
+    def save_quotes(self, quotes: Iterable[Quote]) -> None:
+        """Persist ``quotes``, merging with anything already cached: an
+        existing entry for a symbol is replaced, a new symbol is added, and
+        entries for symbols not in this batch are left untouched."""
+
+        raise NotImplementedError

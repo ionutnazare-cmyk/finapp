@@ -45,6 +45,12 @@ dev = [
     "ruff>=0.6",
     "mypy>=1.11",
     "pandas-stubs>=2.2",
+    "requests>=2.31",
+    "beautifulsoup4>=4.12",
+]
+bvb-live = [
+    "requests>=2.31",
+    "beautifulsoup4>=4.12",
 ]
 
 [project.scripts]
@@ -107,7 +113,7 @@ mypy_path = "src"
 exclude = ["^tests/"]
 
 [[tool.mypy.overrides]]
-module = ["plotly.*", "streamlit.*", "scipy.*", "openpyxl.*", "reportlab.*"]
+module = ["plotly.*", "streamlit.*", "scipy.*", "openpyxl.*", "reportlab.*", "requests.*", "bs4.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

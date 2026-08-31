@@ -23,7 +23,8 @@ def render() -> None:
     st.markdown(
         "Use the sidebar to navigate:\n"
         "- **Portfolio Overview** — create a portfolio, buy/sell shares, see "
-        "valuation, dividend income, and bonus share issues\n"
+        "valuation, dividend income, and bonus share issues (also shows "
+        "experimental live BVB price refresh)\n"
         "- **Monte Carlo** — project a range of future portfolio values\n"
         "- **Retirement Planning** — simulate contributions then withdrawals, "
         "and your probability of running out of money\n"
@@ -31,7 +32,8 @@ def render() -> None:
         "of assets\n"
         "- **Fair Value** — Gordon Growth DDM, dividend yield target, and "
         "P/E-relative valuation for any symbol\n"
-        "- **Dividend Safety** — a transparent, rule-based dividend safety score"
+        "- **Dividend Safety** — a transparent, rule-based dividend safety score\n"
+        "- **Reports** — download an Excel or PDF report for a portfolio"
     )
 
     repository = get_portfolio_repository()

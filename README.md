@@ -66,7 +66,9 @@ PYTHONPATH=src uv run streamlit run src/finapp/presentation/streamlit_app.py
 Open the app and use the pages in the sidebar menu:
 
 - **Portfolio Overview** — create a portfolio, buy/sell shares, and see
-  valuation, dividend income, and bonus share issues
+  valuation, dividend income, and bonus share issues. Also shows an
+  experimental automatic BVB price refresh (see below) with a "Force
+  refresh now" button.
 - **Monte Carlo** — project a range of future portfolio values
 - **Retirement Planning** — simulate contributions then withdrawals, and your
   probability of running out of money
@@ -75,7 +77,8 @@ Open the app and use the pages in the sidebar menu:
 - **Fair Value** — Gordon Growth DDM, dividend yield target, and P/E-relative
   valuation for any symbol (not tied to a stored portfolio)
 - **Dividend Safety** — a transparent, rule-based dividend safety score
-  (not tied to a stored portfolio) FinApp reads market prices, dividends, and bonus issues
+  (not tied to a stored portfolio)
+- **Reports** — download an Excel or PDF report for a portfolio FinApp reads market prices, dividends, and bonus issues
 from local CSV files under `./data/` (created automatically on first run —
 edit them directly, then use the "Reload data files" button in the app):
 
@@ -88,6 +91,34 @@ data/portfolios/         # one JSON file per portfolio, written by the app
 
 These files are gitignored by default since they hold your personal
 portfolio data; see `tests/fixtures/*.csv` for example rows to get started.
+
+### Optional: live BVB price updates
+
+`finapp.infrastructure.market_data.bvb_website_fetcher.BvbWebsiteFetcher`
+can fetch current prices directly from bvb.ro instead of editing
+`quotes.csv` by hand. It requires an extra install:
+
+```bash
+uv sync --extra bvb-live
+```
+
+**Read the module's docstring before relying on this** — there's no
+currently-working public BVB API, so this scrapes a public HTML page, and
+it hasn't been confirmed to work against a plain HTTP request (the page
+may render its price via JavaScript). It raises a clear error rather than
+silently returning a wrong price if the page structure doesn't match what
+it expects. Verify it yourself first:
+
+```bash
+PYTHONPATH=src uv run python -c "
+from finapp.infrastructure.market_data.bvb_website_fetcher import BvbWebsiteFetcher
+print(BvbWebsiteFetcher().fetch_quote('H2O'))
+"
+```
+
+If that raises a `BvbFetchError` saying it couldn't find the expected row,
+this adapter doesn't work in your environment as-is — keep using the
+manual CSV workflow.
 
 > **Note:** `PYTHONPATH=src` works around an editable-install quirk on some
 > `uv` setups where the local `finapp` package's `.pth` redirect isn't picked

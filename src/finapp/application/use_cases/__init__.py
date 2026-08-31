@@ -34,6 +34,9 @@ from finapp.application.use_cases.optimize_portfolio import (
     OptimizePortfolio,
 )
 from finapp.application.use_cases.reinvest_dividends import ReinvestDividends
+from finapp.application.use_cases.refresh_market_data_from_bvb import (
+    RefreshMarketDataFromBvb,
+)
 from finapp.application.use_cases.run_portfolio_monte_carlo_simulation import (
     RunPortfolioMonteCarloSimulation,
 )
@@ -57,6 +60,7 @@ __all__ = [
     "OptimizationObjective",
     "OptimizePortfolio",
     "ReinvestDividends",
+    "RefreshMarketDataFromBvb",
     "ReportFormat",
     "RunPortfolioMonteCarloSimulation",
     "RunPortfolioRetirementPlan",

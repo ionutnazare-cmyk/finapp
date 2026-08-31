@@ -15,10 +15,12 @@ ports — see ``docs/ARCHITECTURE.md``.
 - ``finapp.domain.services.dividend_safety``: ``DividendSafetyInputs``,
   ``DividendSafetyScore``, ``DividendSafetyScoreComponent``,
   ``DividendSafetyRating``, ``DividendSafetyScorer``.
+- ``finapp.domain.services.data_freshness``: ``DataFreshnessPolicy``.
 """
 
 from __future__ import annotations
 
+from finapp.domain.services.data_freshness import DataFreshnessPolicy
 from finapp.domain.services.dividend_safety import (
     DividendSafetyInputs,
     DividendSafetyRating,
@@ -45,6 +47,7 @@ from finapp.domain.services.retirement_planning import (
 )
 
 __all__ = [
+    "DataFreshnessPolicy",
     "DividendSafetyInputs",
     "DividendSafetyRating",
     "DividendSafetyScore",

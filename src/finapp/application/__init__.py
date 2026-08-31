@@ -95,6 +95,20 @@ Sprint 1.14 added Excel/PDF reporting:
 - ``finapp.application.use_cases.ExportPortfolioReport``: builds a report
   and writes it via a chosen ``ReportFormat`` (``EXCEL``/``PDF``).
 - ``finapp.application.dto.PortfolioReport``.
+
+Sprint 1.15 added automatic BVB data updates (quotes only — see
+``finapp.infrastructure.market_data.bvb_website_fetcher`` for why
+dividends/bonus issues aren't included, and for important caveats about
+this adapter's reliability):
+
+- ``finapp.application.ports.BvbDataFetcher``: fetch a live quote from BVB.
+- ``finapp.application.ports.QuoteCacheWriter``: persist fetched quotes
+  into a local cache.
+- ``finapp.application.use_cases.RefreshMarketDataFromBvb``: refreshes
+  quotes if a ``finapp.domain.services.data_freshness.DataFreshnessPolicy``
+  says a refresh is due, tolerating individual symbol failures.
+- ``finapp.application.exceptions.BvbFetchError``.
+- ``finapp.application.dto.MarketDataRefreshResult``.
 """
 
 from __future__ import annotations

@@ -48,8 +48,17 @@ Sprint 1.14 added report exporters implementing
 - ``finapp.infrastructure.reporting.PdfPortfolioReportExporter``: a PDF
   document (reportlab) with the same content.
 
-A live BVB data adapter (scraping/fetching real market, dividend, and
-corporate-actions data) is scoped for a later sprint.
+Sprint 1.15 added automatic BVB price updates:
+
+- ``finapp.infrastructure.market_data.CsvQuoteCacheWriter``: implements
+  :class:`finapp.application.ports.QuoteCacheWriter`, merging fetched
+  quotes into the local CSV cache.
+- ``finapp.infrastructure.market_data.bvb_website_fetcher.BvbWebsiteFetcher``:
+  implements :class:`finapp.application.ports.BvbDataFetcher` by scraping
+  bvb.ro. Requires the optional ``bvb-live`` dependency group and carries
+  real reliability caveats — read its module docstring before using it.
+  Not imported eagerly by ``finapp.infrastructure.market_data`` for that
+  reason.
 """
 
 from __future__ import annotations
