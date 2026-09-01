@@ -8,7 +8,11 @@ from types import MappingProxyType
 
 from finapp.domain.entities.instrument import Instrument
 from finapp.domain.entities.position import Position
-from finapp.domain.exceptions import CurrencyMismatchError, UnknownInstrumentError
+from finapp.domain.exceptions import (
+    CurrencyMismatchError,
+    InvalidQuantityError,
+    UnknownInstrumentError,
+)
 from finapp.domain.value_objects.bonus_issue import BonusIssue
 from finapp.domain.value_objects.enums import Currency
 from finapp.domain.value_objects.money import Money
@@ -97,6 +101,44 @@ class Portfolio:
         if updated.is_closed():
             del self._positions[normalized_symbol]
             return None
+        self._positions[normalized_symbol] = updated
+        return updated
+
+    def set_position_amounts(
+        self, symbol: str, quantity: Decimal, average_cost: Money
+    ) -> Position | None:
+        """Directly correct a held position's quantity and average cost —
+        e.g. fixing a data-entry mistake, or recording a cost basis for
+        shares acquired before using FinApp.
+
+        Unlike :meth:`buy`/:meth:`sell`, this applies no weighted-average
+        or reduced-shares math: it replaces the position's figures
+        outright, using the instrument already on record for ``symbol``
+        (you can't use this to change *which* instrument a position is
+        for). Setting ``quantity`` to zero removes the position, same as
+        a full :meth:`sell`.
+
+        Raises :class:`UnknownInstrumentError` if there is no position for
+        ``symbol``, :class:`InvalidQuantityError` if ``quantity`` is
+        negative, and :class:`CurrencyMismatchError` (via ``Position``) if
+        ``average_cost`` isn't in the instrument's currency.
+        """
+
+        normalized_symbol = symbol.strip().upper()
+        existing = self._positions.get(normalized_symbol)
+        if existing is None:
+            raise UnknownInstrumentError(normalized_symbol)
+
+        if quantity < Decimal("0"):
+            raise InvalidQuantityError(f"Position.quantity cannot be negative, got {quantity}")
+
+        if quantity == Decimal("0"):
+            del self._positions[normalized_symbol]
+            return None
+
+        updated = Position(
+            instrument=existing.instrument, quantity=quantity, average_cost=average_cost
+        )
         self._positions[normalized_symbol] = updated
         return updated
 

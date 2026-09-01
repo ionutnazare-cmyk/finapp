@@ -14,6 +14,7 @@ from finapp.application.use_cases.apply_portfolio_bonus_issues import (
 from finapp.application.use_cases.build_portfolio_report import BuildPortfolioReport
 from finapp.application.use_cases.buy_shares import BuyShares
 from finapp.application.use_cases.create_portfolio import CreatePortfolio
+from finapp.application.use_cases.edit_position import EditPosition
 from finapp.application.use_cases.estimate_fair_value import (
     EstimateFairValue,
     FairValueModel,
@@ -51,6 +52,7 @@ __all__ = [
     "BuildPortfolioReport",
     "BuyShares",
     "CreatePortfolio",
+    "EditPosition",
     "EstimateFairValue",
     "ExecuteMonthlyContribution",
     "ExportPortfolioReport",

@@ -10,6 +10,7 @@ from finapp.domain.entities.portfolio import Portfolio
 from finapp.domain.exceptions import (
     CurrencyMismatchError,
     InsufficientSharesError,
+    InvalidQuantityError,
     UnknownInstrumentError,
 )
 from finapp.domain.value_objects.bonus_issue import BonusIssue
@@ -150,3 +151,62 @@ def test_apply_bonus_issue_unknown_symbol_raises(portfolio: Portfolio) -> None:
     )
     with pytest.raises(UnknownInstrumentError):
         portfolio.apply_bonus_issue(bonus)
+
+
+def test_set_position_amounts_replaces_quantity_and_cost(
+    portfolio: Portfolio, tlv: Instrument
+) -> None:
+    portfolio.buy(tlv, Decimal("100"), Money(amount=Decimal("4"), currency=Currency.RON))
+
+    updated = portfolio.set_position_amounts(
+        "TLV", Decimal("150"), Money(amount=Decimal("3.50"), currency=Currency.RON)
+    )
+
+    assert updated is not None
+    assert updated.quantity == Decimal("150")
+    assert updated.average_cost == Money(amount=Decimal("3.50"), currency=Currency.RON)
+    # No weighted-average math applied - the new cost is used outright.
+    stored = portfolio.get_position("TLV")
+    assert stored is not None
+    assert stored.average_cost == Money(amount=Decimal("3.50"), currency=Currency.RON)
+
+
+def test_set_position_amounts_to_zero_removes_position(
+    portfolio: Portfolio, tlv: Instrument
+) -> None:
+    portfolio.buy(tlv, Decimal("100"), Money(amount=Decimal("4"), currency=Currency.RON))
+
+    result = portfolio.set_position_amounts(
+        "TLV", Decimal("0"), Money(amount=Decimal("4"), currency=Currency.RON)
+    )
+
+    assert result is None
+    assert "TLV" not in portfolio
+    assert portfolio.is_empty()
+
+
+def test_set_position_amounts_negative_quantity_raises(
+    portfolio: Portfolio, tlv: Instrument
+) -> None:
+    portfolio.buy(tlv, Decimal("100"), Money(amount=Decimal("4"), currency=Currency.RON))
+    with pytest.raises(InvalidQuantityError):
+        portfolio.set_position_amounts(
+            "TLV", Decimal("-10"), Money(amount=Decimal("4"), currency=Currency.RON)
+        )
+
+
+def test_set_position_amounts_unknown_symbol_raises(portfolio: Portfolio) -> None:
+    with pytest.raises(UnknownInstrumentError):
+        portfolio.set_position_amounts(
+            "TLV", Decimal("100"), Money(amount=Decimal("4"), currency=Currency.RON)
+        )
+
+
+def test_set_position_amounts_currency_mismatch_raises(
+    portfolio: Portfolio, tlv: Instrument
+) -> None:
+    portfolio.buy(tlv, Decimal("100"), Money(amount=Decimal("4"), currency=Currency.RON))
+    with pytest.raises(CurrencyMismatchError):
+        portfolio.set_position_amounts(
+            "TLV", Decimal("100"), Money(amount=Decimal("4"), currency=Currency.USD)
+        )

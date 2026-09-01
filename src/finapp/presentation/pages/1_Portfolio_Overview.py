@@ -21,6 +21,7 @@ from finapp.application.use_cases.apply_portfolio_bonus_issues import (
     ApplyPortfolioBonusIssues,
 )
 from finapp.application.use_cases.buy_shares import BuyShares
+from finapp.application.use_cases.edit_position import EditPosition
 from finapp.application.use_cases.execute_monthly_contribution import (
     ExecuteMonthlyContribution,
 )
@@ -89,16 +90,88 @@ def _render_overview_tab(portfolio: Portfolio) -> None:
     rows = [
         {
             "Symbol": p.symbol,
-            "Quantity": p.quantity,
-            "Avg. cost": p.average_cost.amount,
-            "Price": p.market_price.amount,
-            "Book cost": p.book_cost.amount,
-            "Market value": p.market_value.amount,
-            "Unrealized P&L": p.unrealized_pnl.amount,
+            "Quantity": float(p.quantity),
+            "Avg. cost": float(p.average_cost.amount),
+            "Price": float(p.market_price.amount),
+            "Book cost": float(p.book_cost.amount),
+            "Market value": float(p.market_value.amount),
+            "Unrealized P&L": float(p.unrealized_pnl.amount),
         }
         for p in valuation.positions
     ]
-    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+    positions_df = pd.DataFrame(rows)
+
+    st.caption(
+        "Quantity and Avg. cost are editable — use this to fix a data-entry mistake "
+        "or set a cost basis for shares you already owned. This does not apply "
+        "weighted-average-cost math like Buy does; it replaces the figures outright. "
+        "Other columns are computed and read-only."
+    )
+    edited_df = st.data_editor(
+        positions_df,
+        column_config={
+            "Symbol": st.column_config.TextColumn(disabled=True),
+            "Quantity": st.column_config.NumberColumn(format="%.2f"),
+            "Avg. cost": st.column_config.NumberColumn(format="%.2f"),
+            "Price": st.column_config.NumberColumn(format="%.2f", disabled=True),
+            "Book cost": st.column_config.NumberColumn(format="%.2f", disabled=True),
+            "Market value": st.column_config.NumberColumn(format="%.2f", disabled=True),
+            "Unrealized P&L": st.column_config.NumberColumn(format="%.2f", disabled=True),
+        },
+        hide_index=True,
+        use_container_width=True,
+        num_rows="fixed",
+        key="positions_editor",
+    )
+
+    if st.button("Apply changes to positions"):
+        changed_rows = [
+            edited_row
+            for _, edited_row in edited_df.iterrows()
+            if not positions_df[positions_df["Symbol"] == edited_row["Symbol"]].empty
+            and (
+                float(edited_row["Quantity"])
+                != float(
+                    positions_df.loc[
+                        positions_df["Symbol"] == edited_row["Symbol"], "Quantity"
+                    ].iloc[0]
+                )
+                or float(edited_row["Avg. cost"])
+                != float(
+                    positions_df.loc[
+                        positions_df["Symbol"] == edited_row["Symbol"], "Avg. cost"
+                    ].iloc[0]
+                )
+            )
+        ]
+
+        if not changed_rows:
+            st.info("No changes to apply.")
+        else:
+            repository = get_portfolio_repository()
+            applied = 0
+            for edited_row in changed_rows:
+                symbol = str(edited_row["Symbol"])
+                quantity = _to_decimal(float(edited_row["Quantity"]), f"{symbol} quantity")
+                avg_cost = _to_decimal(float(edited_row["Avg. cost"]), f"{symbol} avg. cost")
+                if quantity is None or avg_cost is None:
+                    continue
+                if quantity < 0 or avg_cost < 0:
+                    st.error(f"{symbol}: quantity and avg. cost must be non-negative.")
+                    continue
+                try:
+                    EditPosition(repository).execute(
+                        portfolio.name,
+                        symbol,
+                        quantity,
+                        Money(amount=avg_cost, currency=portfolio.base_currency),
+                    )
+                    applied += 1
+                except (ApplicationError, DomainError) as exc:
+                    st.error(f"{symbol}: {exc}")
+            if applied:
+                st.success(f"Applied changes to {applied} position(s).")
+                st.rerun()
 
     if len(rows) > 1:
         fig = px.pie(
