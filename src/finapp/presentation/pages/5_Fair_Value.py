@@ -21,7 +21,11 @@ from finapp.application.use_cases.estimate_fair_value import (
 from finapp.domain.exceptions import DomainError
 from finapp.domain.value_objects.enums import Currency
 from finapp.domain.value_objects.money import Money
-from finapp.presentation.streamlit_common import get_market_data_provider
+from finapp.presentation.streamlit_common import (
+    format_money,
+    format_percent,
+    get_market_data_provider,
+)
 
 st.set_page_config(page_title="Fair Value — FinApp", page_icon="🔍", layout="wide")
 
@@ -68,31 +72,35 @@ def render() -> None:
         col1, col2, col3 = st.columns(3)
         with col1:
             dividend_per_share_raw = st.number_input(
-                "Next annual dividend/share", min_value=0.0, value=3.0, step=0.1
+                "Next annual dividend/share", min_value=0.0, value=3.0, step=0.1, format="%.2f"
             )
         with col2:
-            required_return_raw = st.number_input("Required return (%)", value=10.0, step=0.5)
+            required_return_raw = st.number_input(
+                "Required return (%)", value=10.0, step=0.5, format="%.2f"
+            )
         with col3:
             dividend_growth_rate_raw = st.number_input(
-                "Dividend growth rate (%)", value=4.0, step=0.5
+                "Dividend growth rate (%)", value=4.0, step=0.5, format="%.2f"
             )
     elif model == FairValueModel.DIVIDEND_YIELD_TARGET:
         col1, col2 = st.columns(2)
         with col1:
             dividend_per_share_raw = st.number_input(
-                "Annual dividend/share", min_value=0.0, value=2.5, step=0.1
+                "Annual dividend/share", min_value=0.0, value=2.5, step=0.1, format="%.2f"
             )
         with col2:
             target_yield_raw = st.number_input(
-                "Target yield (%)", min_value=0.01, value=5.0, step=0.25
+                "Target yield (%)", min_value=0.01, value=5.0, step=0.25, format="%.2f"
             )
     else:
         col1, col2 = st.columns(2)
         with col1:
-            earnings_per_share_raw = st.number_input("Earnings/share", value=4.0, step=0.1)
+            earnings_per_share_raw = st.number_input(
+                "Earnings/share", value=4.0, step=0.1, format="%.2f"
+            )
         with col2:
             target_pe_raw = st.number_input(
-                "Target P/E multiple", min_value=0.01, value=15.0, step=0.5
+                "Target P/E multiple", min_value=0.01, value=15.0, step=0.5, format="%.2f"
             )
 
     if not symbol:
@@ -153,10 +161,12 @@ def render() -> None:
 
     st.subheader(f"{estimate.symbol} — {_MODEL_LABELS[model]}")
     col1, col2, col3 = st.columns(3)
-    col1.metric("Fair value per share", str(estimate.fair_value_per_share))
-    col2.metric("Current price", str(estimate.current_price) if estimate.current_price else "—")
+    col1.metric("Fair value per share", format_money(estimate.fair_value_per_share))
+    col2.metric(
+        "Current price", format_money(estimate.current_price) if estimate.current_price else "—"
+    )
     if estimate.margin_of_safety is not None:
-        col3.metric("Margin of safety", f"{float(estimate.margin_of_safety):.1%}")
+        col3.metric("Margin of safety", format_percent(estimate.margin_of_safety))
         if estimate.margin_of_safety > 0:
             st.success("Trading below estimated fair value (potentially undervalued).")
         elif estimate.margin_of_safety < 0:

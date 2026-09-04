@@ -12,13 +12,17 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 from pathlib import Path
 
 import streamlit as st
 
-from finapp.application.dto import MarketDataRefreshResult
+from finapp.application.dto import DividendRefreshResult, MarketDataRefreshResult
 from finapp.application.exceptions import ApplicationError
 from finapp.application.use_cases.create_portfolio import CreatePortfolio
+from finapp.application.use_cases.refresh_dividends_from_bvb import (
+    RefreshDividendsFromBvb,
+)
 from finapp.application.use_cases.refresh_market_data_from_bvb import (
     RefreshMarketDataFromBvb,
 )
@@ -27,7 +31,11 @@ from finapp.domain.entities.portfolio import Portfolio
 from finapp.domain.exceptions import DomainError
 from finapp.domain.services.data_freshness import DataFreshnessPolicy
 from finapp.domain.value_objects.enums import Currency
+from finapp.domain.value_objects.money import Money
 from finapp.infrastructure.bonus_issues.csv_provider import CsvBonusIssueProvider
+from finapp.infrastructure.dividends.csv_dividend_cache_writer import (
+    CsvDividendCacheWriter,
+)
 from finapp.infrastructure.dividends.csv_provider import CsvDividendProvider
 from finapp.infrastructure.market_data.csv_provider import CsvMarketDataProvider
 from finapp.infrastructure.market_data.csv_quote_cache_writer import CsvQuoteCacheWriter
@@ -187,3 +195,67 @@ def maybe_refresh_bvb_prices(
         get_market_data_provider().refresh()
 
     return result
+
+
+def maybe_refresh_bvb_dividends(
+    symbols: Sequence[str], interval_minutes: int = 30, force: bool = False
+) -> DividendRefreshResult | None:
+    """Best-effort automatic BVB dividend refresh for ``symbols``.
+
+    Same gating strategy as :func:`maybe_refresh_bvb_prices`, based on
+    ``dividends.csv``'s last-modified time. Returns ``None`` if the
+    optional ``bvb-live`` dependency group isn't installed. See
+    :mod:`finapp.infrastructure.market_data.bvb_website_fetcher` for
+    dividend-specific limitations (a single trailing-year figure per
+    symbol, not a full payment history, dated to Dec 31 as a placeholder)
+    before trusting this in production.
+    """
+
+    try:
+        from finapp.infrastructure.market_data.bvb_website_fetcher import (
+            BvbWebsiteFetcher,
+        )
+    except ImportError:
+        return None
+
+    settings = get_settings()
+    dividends_path = settings.data_dir / "dividends.csv"
+
+    last_updated = None
+    if dividends_path.exists() and not force:
+        last_updated = datetime.fromtimestamp(dividends_path.stat().st_mtime, tz=UTC)
+
+    policy = DataFreshnessPolicy(refresh_interval=timedelta(minutes=interval_minutes))
+    use_case = RefreshDividendsFromBvb(
+        BvbWebsiteFetcher(), CsvDividendCacheWriter(dividends_path), policy
+    )
+    result = use_case.execute(list(symbols), last_updated=last_updated, now=datetime.now(UTC))
+
+    if result.attempted and result.updated_symbols:
+        get_dividend_provider().refresh()
+
+    return result
+
+
+def format_money(money: Money) -> str:
+    """Format a :class:`Money` value with exactly 2 decimal places, e.g.
+    ``'450.00 RON'``. The single place every page should go through for
+    displaying a monetary amount, so formatting stays consistent
+    everywhere rather than each page rolling its own ``str()``/f-string.
+    """
+
+    return f"{money.amount:.2f} {money.currency.value}"
+
+
+def format_number(value: Decimal | float, decimals: int = 2) -> str:
+    """Format a plain (non-monetary) number with a fixed number of decimal
+    places, e.g. quantities or ratios. Defaults to 2 decimals."""
+
+    return f"{float(value):.{decimals}f}"
+
+
+def format_percent(value: Decimal | float, decimals: int = 2) -> str:
+    """Format a fraction (e.g. ``0.05``) as a percentage string with a fixed
+    number of decimal places, e.g. ``'5.00%'``. Defaults to 2 decimals."""
+
+    return f"{float(value) * 100:.{decimals}f}%"

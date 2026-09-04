@@ -59,6 +59,18 @@ Sprint 1.15 added automatic BVB price updates:
   real reliability caveats — read its module docstring before using it.
   Not imported eagerly by ``finapp.infrastructure.market_data`` for that
   reason.
+
+Sprint 1.16 added automatic BVB dividend updates:
+
+- ``finapp.infrastructure.dividends.CsvDividendCacheWriter``: implements
+  :class:`finapp.application.ports.DividendCacheWriter`, merging fetched
+  dividends into the local CSV cache (keyed by symbol + year, since BVB
+  only ever gives one figure per year).
+- ``BvbWebsiteFetcher`` above also implements
+  :class:`finapp.application.ports.DividendProvider` — the same page
+  yields both a price and (sometimes) a dividend figure, so one adapter
+  serves both roles. See its module docstring for dividend-specific
+  limitations (single trailing year, synthetic Dec 31 pay date).
 """
 
 from __future__ import annotations

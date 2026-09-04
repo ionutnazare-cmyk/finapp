@@ -20,6 +20,8 @@ from finapp.application.use_cases.run_portfolio_retirement_plan import (
 from finapp.domain.exceptions import DomainError
 from finapp.domain.services.retirement_planning import RetirementPlanAssumptions
 from finapp.presentation.streamlit_common import (
+    format_money,
+    format_percent,
     get_market_data_provider,
     get_portfolio_repository,
     select_or_create_portfolio,
@@ -145,9 +147,9 @@ def render() -> None:
 
     st.subheader("Results")
     col1, col2, col3 = st.columns(3)
-    col1.metric("Value at retirement (median)", str(plan.value_at_retirement_percentile_50))
-    col2.metric("Value at end of retirement (median)", str(plan.value_at_end_percentile_50))
-    col3.metric("Probability of running out of money", f"{depletion_probability:.1%}")
+    col1.metric("Value at retirement (median)", format_money(plan.value_at_retirement_percentile_50))
+    col2.metric("Value at end of retirement (median)", format_money(plan.value_at_end_percentile_50))
+    col3.metric("Probability of running out of money", format_percent(depletion_probability))
 
     if depletion_probability >= 0.5:
         st.error(
@@ -168,19 +170,25 @@ def render() -> None:
             [
                 {
                     "Outcome": "At retirement — 10th percentile",
-                    "Value": str(plan.value_at_retirement_percentile_10),
+                    "Value": format_money(plan.value_at_retirement_percentile_10),
                 },
                 {
                     "Outcome": "At retirement — median",
-                    "Value": str(plan.value_at_retirement_percentile_50),
+                    "Value": format_money(plan.value_at_retirement_percentile_50),
                 },
                 {
                     "Outcome": "At retirement — 90th percentile",
-                    "Value": str(plan.value_at_retirement_percentile_90),
+                    "Value": format_money(plan.value_at_retirement_percentile_90),
                 },
-                {"Outcome": "At end — 10th percentile", "Value": str(plan.value_at_end_percentile_10)},
-                {"Outcome": "At end — median", "Value": str(plan.value_at_end_percentile_50)},
-                {"Outcome": "At end — 90th percentile", "Value": str(plan.value_at_end_percentile_90)},
+                {
+                    "Outcome": "At end — 10th percentile",
+                    "Value": format_money(plan.value_at_end_percentile_10),
+                },
+                {"Outcome": "At end — median", "Value": format_money(plan.value_at_end_percentile_50)},
+                {
+                    "Outcome": "At end — 90th percentile",
+                    "Value": format_money(plan.value_at_end_percentile_90),
+                },
             ]
         ),
         use_container_width=True,

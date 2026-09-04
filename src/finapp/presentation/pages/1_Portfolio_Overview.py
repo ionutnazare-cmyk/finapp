@@ -37,10 +37,13 @@ from finapp.domain.exceptions import DomainError
 from finapp.domain.value_objects.enums import AssetType
 from finapp.domain.value_objects.money import Money
 from finapp.presentation.streamlit_common import (
+    format_money,
+    format_number,
     get_bonus_issue_provider,
     get_dividend_provider,
     get_market_data_provider,
     get_portfolio_repository,
+    maybe_refresh_bvb_dividends,
     maybe_refresh_bvb_prices,
     refresh_all_providers,
     select_or_create_portfolio,
@@ -83,9 +86,9 @@ def _render_overview_tab(portfolio: Portfolio) -> None:
         return
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Book cost", str(valuation.base_currency_total_book_cost))
-    col2.metric("Market value", str(valuation.base_currency_total_market_value))
-    col3.metric("Unrealized P&L", str(valuation.base_currency_total_unrealized_pnl))
+    col1.metric("Book cost", format_money(valuation.base_currency_total_book_cost))
+    col2.metric("Market value", format_money(valuation.base_currency_total_market_value))
+    col3.metric("Unrealized P&L", format_money(valuation.base_currency_total_unrealized_pnl))
 
     rows = [
         {
@@ -190,12 +193,12 @@ def _render_buy_sell_tab(portfolio: Portfolio) -> None:
     else:
         with st.form("buy_existing_form"):
             symbol = st.selectbox("Symbol", held_symbols)
-            quantity = st.number_input("Quantity", min_value=0.0, step=1.0, format="%.4f")
+            quantity = st.number_input("Quantity", min_value=0.0, step=1.0, format="%.2f")
             price = st.number_input(
                 f"Price per share ({portfolio.base_currency.value})",
                 min_value=0.0,
                 step=0.01,
-                format="%.4f",
+                format="%.2f",
             )
             submitted = st.form_submit_button("Buy")
         if submitted:
@@ -228,10 +231,10 @@ def _render_buy_sell_tab(portfolio: Portfolio) -> None:
         exchange = st.text_input("Exchange", value="BVB")
         isin = st.text_input("ISIN (optional, 12 characters)")
         new_quantity = st.number_input(
-            "Quantity", min_value=0.0, step=1.0, format="%.4f", key="new_qty"
+            "Quantity", min_value=0.0, step=1.0, format="%.2f", key="new_qty"
         )
         new_price = st.number_input(
-            "Price per share", min_value=0.0, step=0.01, format="%.4f", key="new_price"
+            "Price per share", min_value=0.0, step=0.01, format="%.2f", key="new_price"
         )
         submitted_new = st.form_submit_button("Buy new instrument")
 
@@ -273,7 +276,7 @@ def _render_buy_sell_tab(portfolio: Portfolio) -> None:
         return
     with st.form("sell_form"):
         sell_symbol = st.selectbox("Symbol", held_symbols, key="sell_symbol")
-        sell_quantity = st.number_input("Quantity", min_value=0.0, step=1.0, format="%.4f")
+        sell_quantity = st.number_input("Quantity", min_value=0.0, step=1.0, format="%.2f")
         submitted_sell = st.form_submit_button("Sell")
     if submitted_sell:
         qty = _to_decimal(sell_quantity, "Quantity")
@@ -297,6 +300,38 @@ def _render_dividends_tab(portfolio: Portfolio) -> None:
         st.info("No positions yet.")
         return
 
+    held_symbols = list(portfolio.positions.keys())
+
+    with st.expander("Live BVB dividends (experimental)"):
+        with st.spinner("Checking BVB for dividend updates..."):
+            auto_result = maybe_refresh_bvb_dividends(held_symbols)
+
+        if auto_result is None:
+            st.caption(
+                "Install `uv sync --extra bvb-live` to enable automatic dividend "
+                "fetching from BVB — see README. Note this only ever gives one "
+                "trailing-year figure per symbol, not a full payment history."
+            )
+        else:
+            if auto_result.updated_symbols:
+                st.success(f"Refreshed from BVB: {', '.join(auto_result.updated_symbols)}")
+            if auto_result.no_dividend_symbols:
+                st.caption(
+                    f"No known dividend on BVB for: {', '.join(auto_result.no_dividend_symbols)}"
+                )
+            if auto_result.failed_symbols:
+                st.warning(f"Couldn't fetch from BVB: {', '.join(auto_result.failed_symbols)}")
+            if st.button("Force refresh dividends now"):
+                with st.spinner("Fetching latest dividends from BVB..."):
+                    forced_result = maybe_refresh_bvb_dividends(held_symbols, force=True)
+                if forced_result is not None and forced_result.updated_symbols:
+                    st.success(f"Refreshed from BVB: {', '.join(forced_result.updated_symbols)}")
+                if forced_result is not None and forced_result.failed_symbols:
+                    st.warning(
+                        f"Couldn't fetch from BVB: {', '.join(forced_result.failed_symbols)}"
+                    )
+                st.rerun()
+
     income = GetPortfolioDividendIncome(repository, dividend_provider).execute(portfolio.name)
     if not income.incomes:
         st.info(
@@ -307,15 +342,15 @@ def _render_dividends_tab(portfolio: Portfolio) -> None:
         rows = [
             {
                 "Symbol": i.instrument.symbol,
-                "Quantity held": i.quantity_held,
-                "Amount/share": i.dividend.amount_per_share.amount,
+                "Quantity held": format_number(i.quantity_held),
+                "Amount/share": format_number(i.dividend.amount_per_share.amount),
                 "Pay date": i.dividend.pay_date.isoformat(),
-                "Total income": i.total_income.amount,
+                "Total income": format_number(i.total_income.amount),
             }
             for i in income.incomes
         ]
         st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
-        st.metric("Total dividend income", str(income.base_currency_total_income))
+        st.metric("Total dividend income", format_money(income.base_currency_total_income))
 
         st.caption(
             "Reinvesting uses the most recently known dividend for each position. "
@@ -362,10 +397,10 @@ def _render_bonus_issues_tab(portfolio: Portfolio) -> None:
             rows = [
                 {
                     "Symbol": a.instrument.symbol,
-                    "Ratio (new/held)": a.bonus.new_shares_per_held_share,
-                    "Quantity before": a.quantity_before,
-                    "Quantity after": a.quantity_after,
-                    "New shares": a.additional_shares,
+                    "Ratio (new/held)": format_number(a.bonus.new_shares_per_held_share),
+                    "Quantity before": format_number(a.quantity_before),
+                    "Quantity after": format_number(a.quantity_after),
+                    "New shares": format_number(a.additional_shares),
                 }
                 for a in result.applications
             ]

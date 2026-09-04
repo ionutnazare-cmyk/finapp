@@ -86,5 +86,6 @@ review in Sprint 1.1; automated import-linting may be added in a later sprint.
 | 1.13 | Dividend safety scoring — **done** |
 | 1.14 | Excel/PDF reporting — **done** |
 | 1.15 | Automatic BVB data update scheduler — **done** (quotes only; see caveats in `finapp.infrastructure.market_data.bvb_website_fetcher`) |
+| 1.16 | Automatic BVB dividend updates — **done** (single trailing-year figure per symbol, synthetic pay date; see caveats in `finapp.infrastructure.market_data.bvb_website_fetcher`). Post-original-roadmap addition. |
 
 This table will be refined as each sprint is planned in detail.

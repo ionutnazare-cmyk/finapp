@@ -92,11 +92,12 @@ data/portfolios/         # one JSON file per portfolio, written by the app
 These files are gitignored by default since they hold your personal
 portfolio data; see `tests/fixtures/*.csv` for example rows to get started.
 
-### Optional: live BVB price updates
+### Optional: live BVB price and dividend updates
 
 `finapp.infrastructure.market_data.bvb_website_fetcher.BvbWebsiteFetcher`
-can fetch current prices directly from bvb.ro instead of editing
-`quotes.csv` by hand. It requires an extra install:
+can fetch current prices — and a trailing-year dividend figure — directly
+from bvb.ro instead of editing `quotes.csv`/`dividends.csv` by hand. It
+requires an extra install:
 
 ```bash
 uv sync --extra bvb-live
@@ -105,18 +106,27 @@ uv sync --extra bvb-live
 **Read the module's docstring before relying on this** — there's no
 currently-working public BVB API, so this scrapes a public HTML page, and
 it hasn't been confirmed to work against a plain HTTP request (the page
-may render its price via JavaScript). It raises a clear error rather than
+may render its data via JavaScript). It raises a clear error rather than
 silently returning a wrong price if the page structure doesn't match what
 it expects. Verify it yourself first:
 
 ```bash
 PYTHONPATH=src uv run python -c "
 from finapp.infrastructure.market_data.bvb_website_fetcher import BvbWebsiteFetcher
-print(BvbWebsiteFetcher().fetch_quote('H2O'))
+fetcher = BvbWebsiteFetcher()
+print(fetcher.fetch_quote('H2O'))
+print(fetcher.get_dividends('H2O'))
 "
 ```
 
-If that raises a `BvbFetchError` saying it couldn't find the expected row,
+Dividend-specific limitation: BVB's page only ever shows **one figure for
+the current trailing year**, not a payment history, and doesn't give an
+exact pay date (only the year) — this adapter dates it to December 31 of
+that year as a documented placeholder. Fine for a quick "what's my
+dividend income" table; not something to rely on for date-precise
+analysis.
+
+If either call raises a `BvbFetchError` saying it couldn't find the expected row,
 this adapter doesn't work in your environment as-is — keep using the
 manual CSV workflow.
 

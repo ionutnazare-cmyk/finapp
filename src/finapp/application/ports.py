@@ -209,3 +209,21 @@ class QuoteCacheWriter(ABC):
         entries for symbols not in this batch are left untouched."""
 
         raise NotImplementedError
+
+
+class DividendCacheWriter(ABC):
+    """Port for persisting freshly-fetched dividends into whatever local
+    cache a :class:`DividendProvider` reads from (e.g. a CSV file).
+    """
+
+    @abstractmethod
+    def save_dividends(self, dividends: Iterable[Dividend]) -> None:
+        """Persist ``dividends``, merging with anything already cached: an
+        existing entry for the same symbol *and year* is replaced (BVB's
+        page only ever gives one figure per year, so year is the natural
+        de-duplication key here — see
+        ``finapp.infrastructure.market_data.bvb_website_fetcher``), a new
+        symbol/year is added, and entries not in this batch are untouched.
+        """
+
+        raise NotImplementedError

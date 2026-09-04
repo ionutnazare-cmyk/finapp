@@ -20,6 +20,8 @@ from finapp.application.use_cases.run_portfolio_monte_carlo_simulation import (
 from finapp.domain.exceptions import DomainError
 from finapp.domain.services.monte_carlo import MonteCarloAssumptions
 from finapp.presentation.streamlit_common import (
+    format_money,
+    format_percent,
     get_market_data_provider,
     get_portfolio_repository,
     select_or_create_portfolio,
@@ -110,19 +112,28 @@ def render() -> None:
     st.subheader(f"Results after {int(years)} years ({int(simulations):,} simulations)")
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Starting value", str(simulation.starting_value))
-    col2.metric("Median ending value", str(simulation.percentile_50))
-    col3.metric("Probability of ending below starting value", f"{float(simulation.probability_of_loss):.1%}")
+    col1.metric("Starting value", format_money(simulation.starting_value))
+    col2.metric("Median ending value", format_money(simulation.percentile_50))
+    col3.metric(
+        "Probability of ending below starting value",
+        format_percent(simulation.probability_of_loss),
+    )
 
     st.dataframe(
         pd.DataFrame(
             [
-                {"Outcome": "10th percentile (pessimistic)", "Value": str(simulation.percentile_10)},
-                {"Outcome": "50th percentile (median)", "Value": str(simulation.percentile_50)},
-                {"Outcome": "90th percentile (optimistic)", "Value": str(simulation.percentile_90)},
-                {"Outcome": "Mean", "Value": str(simulation.mean)},
-                {"Outcome": "Minimum", "Value": str(simulation.minimum)},
-                {"Outcome": "Maximum", "Value": str(simulation.maximum)},
+                {
+                    "Outcome": "10th percentile (pessimistic)",
+                    "Value": format_money(simulation.percentile_10),
+                },
+                {"Outcome": "50th percentile (median)", "Value": format_money(simulation.percentile_50)},
+                {
+                    "Outcome": "90th percentile (optimistic)",
+                    "Value": format_money(simulation.percentile_90),
+                },
+                {"Outcome": "Mean", "Value": format_money(simulation.mean)},
+                {"Outcome": "Minimum", "Value": format_money(simulation.minimum)},
+                {"Outcome": "Maximum", "Value": format_money(simulation.maximum)},
             ]
         ),
         use_container_width=True,

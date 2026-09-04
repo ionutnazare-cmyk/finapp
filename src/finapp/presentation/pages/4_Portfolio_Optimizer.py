@@ -26,6 +26,7 @@ from finapp.application.use_cases.optimize_portfolio import (
 )
 from finapp.domain.exceptions import DomainError, OptimizationFailedError
 from finapp.domain.services.portfolio_optimizer import OptimizationInput
+from finapp.presentation.streamlit_common import format_number, format_percent
 
 st.set_page_config(page_title="Portfolio Optimizer — FinApp", page_icon="📐", layout="wide")
 
@@ -151,16 +152,16 @@ def render() -> None:
     st.subheader("Optimal allocation")
     st.dataframe(
         pd.DataFrame(
-            [{"Symbol": a.symbol, "Weight": f"{float(a.weight):.1%}"} for a in result.allocations]
+            [{"Symbol": a.symbol, "Weight": format_percent(a.weight)} for a in result.allocations]
         ),
         use_container_width=True,
         hide_index=True,
     )
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Expected return", f"{float(result.expected_return):.2%}")
-    col2.metric("Expected volatility", f"{float(result.expected_volatility):.2%}")
-    col3.metric("Sharpe ratio", f"{float(result.sharpe_ratio):.2f}")
+    col1.metric("Expected return", format_percent(result.expected_return))
+    col2.metric("Expected volatility", format_percent(result.expected_volatility))
+    col3.metric("Sharpe ratio", format_number(result.sharpe_ratio))
 
 
 render()

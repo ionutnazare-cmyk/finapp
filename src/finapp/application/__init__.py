@@ -109,6 +109,18 @@ this adapter's reliability):
   says a refresh is due, tolerating individual symbol failures.
 - ``finapp.application.exceptions.BvbFetchError``.
 - ``finapp.application.dto.MarketDataRefreshResult``.
+
+Sprint 1.16 added automatic BVB dividend updates (one annual figure per
+symbol, not a full payment history — see
+``finapp.infrastructure.market_data.bvb_website_fetcher`` for why, and for
+caveats):
+
+- ``finapp.application.ports.DividendCacheWriter``: persist fetched
+  dividends into a local cache.
+- ``finapp.application.use_cases.RefreshDividendsFromBvb``: refreshes
+  dividends if due, distinguishing "no known dividend" (normal) from a
+  genuine fetch failure.
+- ``finapp.application.dto.DividendRefreshResult``.
 """
 
 from __future__ import annotations

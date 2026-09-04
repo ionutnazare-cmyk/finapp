@@ -8,6 +8,7 @@ manually verify ``fetch_quote`` against the live site.
 
 from __future__ import annotations
 
+from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
@@ -52,3 +53,40 @@ def test_unparseable_value_raises_bvb_fetch_error() -> None:
 def test_empty_html_raises_bvb_fetch_error() -> None:
     with pytest.raises(BvbFetchError):
         BvbWebsiteFetcher._parse_last_price("<html></html>", "TLV")
+
+
+def test_parses_latest_dividend_from_verified_fixture() -> None:
+    html = FIXTURE_PATH.read_text(encoding="utf-8")
+    dividend = BvbWebsiteFetcher._parse_latest_dividend(html, "H2O")
+    assert dividend is not None
+    assert dividend.amount_per_share.amount == Decimal("9.571562")
+    assert dividend.pay_date == date(2025, 12, 31)
+
+
+def test_dividend_label_year_is_extracted() -> None:
+    html = "<table><tr><td>Dividend (2024)</td><td>1,50</td></tr></table>"
+    dividend = BvbWebsiteFetcher._parse_latest_dividend(html, "TLV")
+    assert dividend is not None
+    assert dividend.pay_date.year == 2024
+    assert dividend.amount_per_share.amount == Decimal("1.50")
+
+
+def test_no_dividend_row_returns_none_not_an_error() -> None:
+    html = "<table><tr><td>PER</td><td>18,54</td></tr></table>"
+    dividend = BvbWebsiteFetcher._parse_latest_dividend(html, "TLV")
+    assert dividend is None
+
+
+def test_get_dividends_returns_empty_tuple_when_no_row(monkeypatch: pytest.MonkeyPatch) -> None:
+    fetcher = BvbWebsiteFetcher()
+    monkeypatch.setattr(fetcher, "_fetch_page", lambda symbol: "<table></table>")
+    assert fetcher.get_dividends("TLV") == ()
+
+
+def test_get_dividends_returns_one_item_when_found(monkeypatch: pytest.MonkeyPatch) -> None:
+    fetcher = BvbWebsiteFetcher()
+    html = "<table><tr><td>Dividend (2025)</td><td>0,25</td></tr></table>"
+    monkeypatch.setattr(fetcher, "_fetch_page", lambda symbol: html)
+    dividends = fetcher.get_dividends("TLV")
+    assert len(dividends) == 1
+    assert dividends[0].amount_per_share.amount == Decimal("0.25")

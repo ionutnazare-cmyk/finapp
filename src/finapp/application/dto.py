@@ -219,3 +219,23 @@ class MarketDataRefreshResult:
     updated_symbols: tuple[str, ...]
     failed_symbols: tuple[str, ...]
     as_of: datetime
+
+
+@dataclass(frozen=True)
+class DividendRefreshResult:
+    """Outcome of a (possibly skipped) BVB dividend refresh attempt.
+
+    ``attempted`` is ``False`` when the freshness policy decided a refresh
+    wasn't due yet. Distinct from ``MarketDataRefreshResult``:
+    ``no_dividend_symbols`` covers symbols that were successfully checked
+    but have no known dividend on BVB's page — that's a normal outcome
+    (most instruments don't pay dividends), not a failure, so it isn't
+    lumped in with ``failed_symbols`` (network/HTTP errors, or a page BVB
+    changed the layout of).
+    """
+
+    attempted: bool
+    updated_symbols: tuple[str, ...]
+    no_dividend_symbols: tuple[str, ...]
+    failed_symbols: tuple[str, ...]
+    as_of: datetime

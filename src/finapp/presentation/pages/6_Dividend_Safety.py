@@ -20,7 +20,11 @@ from finapp.domain.services.dividend_safety import DividendSafetyRating
 from finapp.domain.value_objects.dividend import Dividend
 from finapp.domain.value_objects.enums import Currency
 from finapp.domain.value_objects.money import Money
-from finapp.presentation.streamlit_common import get_dividend_provider
+from finapp.presentation.streamlit_common import (
+    format_number,
+    format_percent,
+    get_dividend_provider,
+)
 
 st.set_page_config(page_title="Dividend Safety — FinApp", page_icon="🛡️", layout="wide")
 
@@ -59,7 +63,12 @@ def render() -> None:
     with col4:
         has_earnings = st.checkbox("Company has positive earnings", value=True)
         payout_ratio_raw = st.number_input(
-            "Payout ratio (%)", min_value=0.0, value=60.0, step=5.0, disabled=not has_earnings
+            "Payout ratio (%)",
+            min_value=0.0,
+            value=60.0,
+            step=5.0,
+            disabled=not has_earnings,
+            format="%.2f",
         )
     with col5:
         debt_to_equity_raw = st.number_input(
@@ -83,7 +92,15 @@ def render() -> None:
         )
         default_rows = pd.DataFrame([{"Year": date.today().year - 1, "Amount per share": 1.0}])
 
-    history_rows = st.data_editor(default_rows, num_rows="dynamic", use_container_width=True)
+    history_rows = st.data_editor(
+        default_rows,
+        num_rows="dynamic",
+        use_container_width=True,
+        column_config={
+            "Year": st.column_config.NumberColumn(format="%d"),
+            "Amount per share": st.column_config.NumberColumn(format="%.2f"),
+        },
+    )
 
     if not symbol:
         st.info("Enter a symbol to get started.")
@@ -136,7 +153,7 @@ def render() -> None:
         return
 
     label, style = _RATING_DISPLAY[result.rating]
-    st.subheader(f"{result.symbol}: {float(result.overall_score):.1f} / 100 — {label}")
+    st.subheader(f"{result.symbol}: {format_number(result.overall_score)} / 100 — {label}")
     getattr(st, style)(f"Overall rating: {label}")
 
     st.dataframe(
@@ -144,8 +161,8 @@ def render() -> None:
             [
                 {
                     "Factor": c.name.replace("_", " ").title(),
-                    "Score": f"{float(c.score):.0f}",
-                    "Weight": f"{float(c.weight):.0%}",
+                    "Score": format_number(c.score),
+                    "Weight": format_percent(c.weight),
                     "Explanation": c.explanation,
                 }
                 for c in result.components
