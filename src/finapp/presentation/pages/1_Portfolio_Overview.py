@@ -115,8 +115,8 @@ def _render_overview_tab(portfolio: Portfolio) -> None:
         column_config={
             "Symbol": st.column_config.TextColumn(disabled=True),
             "Quantity": st.column_config.NumberColumn(format="%.2f"),
-            "Avg. cost": st.column_config.NumberColumn(format="%.2f"),
-            "Price": st.column_config.NumberColumn(format="%.2f", disabled=True),
+            "Avg. cost": st.column_config.NumberColumn(format="%.4f"),
+            "Price": st.column_config.NumberColumn(format="%.4f", disabled=True),
             "Book cost": st.column_config.NumberColumn(format="%.2f", disabled=True),
             "Market value": st.column_config.NumberColumn(format="%.2f", disabled=True),
             "Unrealized P&L": st.column_config.NumberColumn(format="%.2f", disabled=True),
